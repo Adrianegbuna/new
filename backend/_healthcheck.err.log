@@ -1,0 +1,95 @@
+Product search error: QueryFailedError: relation "product" does not exist
+    at PostgresQueryRunner.query (C:\VEMAKT TECH\E-commerce\backend\src\driver\postgres\PostgresQueryRunner.ts:325:19)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at DataSource.query (C:\VEMAKT TECH\E-commerce\backend\src\data-source\DataSource.ts:541:20)
+    at ChatService.searchProducts (C:\VEMAKT TECH\E-commerce\backend\src\services\chatService.ts:37:24)
+    at ChatService.enrichContextWithData (C:\VEMAKT TECH\E-commerce\backend\src\services\chatService.ts:192:28)
+    at ChatService.sendMessage (C:\VEMAKT TECH\E-commerce\backend\src\services\chatService.ts:464:29)
+    at sendGuestMessage (C:\VEMAKT TECH\E-commerce\backend\src\controllers\chatController.ts:64:24) {
+  query: '\n' +
+    '        SELECT id, name, description, price, category, image_url, rating, store_id\n' +
+    '        FROM product\n' +
+    '        WHERE \n' +
+    '          LOWER(name) LIKE LOWER($1) OR\n' +
+    '          LOWER(description) LIKE LOWER($1) OR\n' +
+    '          LOWER(category) LIKE LOWER($1)\n' +
+    '        LIMIT $2\n' +
+    '      ',
+  parameters: [ '%solar%', 4 ],
+  driverError: error: relation "product" does not exist
+      at C:\VEMAKT TECH\E-commerce\backend\node_modules\pg\lib\client.js:545:17
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at PostgresQueryRunner.query (C:\VEMAKT TECH\E-commerce\backend\src\driver\postgres\PostgresQueryRunner.ts:254:25)
+      at DataSource.query (C:\VEMAKT TECH\E-commerce\backend\src\data-source\DataSource.ts:541:20)
+      at ChatService.searchProducts (C:\VEMAKT TECH\E-commerce\backend\src\services\chatService.ts:37:24)
+      at ChatService.enrichContextWithData (C:\VEMAKT TECH\E-commerce\backend\src\services\chatService.ts:192:28)
+      at ChatService.sendMessage (C:\VEMAKT TECH\E-commerce\backend\src\services\chatService.ts:464:29)
+      at sendGuestMessage (C:\VEMAKT TECH\E-commerce\backend\src\controllers\chatController.ts:64:24) {
+    length: 106,
+    severity: 'ERROR',
+    code: '42P01',
+    detail: undefined,
+    hint: undefined,
+    position: '98',
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'parse_relation.c',
+    line: '1466',
+    routine: 'parserOpenTable'
+  },
+  length: 106,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '98',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1466',
+  routine: 'parserOpenTable'
+}
+Claude API error: AuthenticationError: 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CYjx1DDMwhRoGgR1Yfakz"}
+    at APIError.generate (C:\VEMAKT TECH\E-commerce\backend\node_modules\@anthropic-ai\sdk\src\core\error.ts:67:14)
+    at Anthropic.makeStatusError (C:\VEMAKT TECH\E-commerce\backend\node_modules\@anthropic-ai\sdk\src\client.ts:514:28)
+    at Anthropic.makeRequest (C:\VEMAKT TECH\E-commerce\backend\node_modules\@anthropic-ai\sdk\src\client.ts:749:24)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at ChatService.sendMessage (C:\VEMAKT TECH\E-commerce\backend\src\services\chatService.ts:1118:24)
+    at sendGuestMessage (C:\VEMAKT TECH\E-commerce\backend\src\controllers\chatController.ts:64:24) {
+  status: 401,
+  headers: Headers {
+    date: 'Thu, 05 Mar 2026 12:40:27 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CYjx1DDMwhRoGgR1Yfakz',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '20',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'cf-cache-status': 'DYNAMIC',
+    'x-robots-tag': 'none',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9d793071ba31a6e8-LHR'
+  },
+  requestID: 'req_011CYjx1DDMwhRoGgR1Yfakz',
+  error: {
+    type: 'error',
+    error: { type: 'authentication_error', message: 'invalid x-api-key' },
+    request_id: 'req_011CYjx1DDMwhRoGgR1Yfakz'
+  }
+}

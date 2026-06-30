@@ -1,0 +1,94 @@
+
+> renewablezmart-backend-express@1.0.0 start:dev
+> ts-node-dev --respawn --transpile-only src/server.ts
+
+[INFO] 13:39:51 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.9.3)
+[EMAIL CONFIG] SENDGRID_API_KEY exists: true
+[EMAIL CONFIG] EMAIL_FROM: no-reply@renewablezmart.com
+[EMAIL CONFIG] ADMIN_EMAIL: ksa@renewablezmart.com
+✉️ SendGrid initialized successfully
+📧 Emails will be sent from: no-reply@renewablezmart.com
+[S3 SERVICE] Initialized with: {
+  bucket: 'renewablezmart',
+  region: 'eu-west-2',
+  url: 'https://renewablezmart.s3.eu-west-2.amazonaws.com'
+}
+[Debug Routes] Error tracking system initialized
+[S3 PRESIGNED] ✓ AWS credentials validated
+✅ Environment variables validated successfully
+
+[INIT] Initializing database connection...
+[INIT] DATABASE_HOST: dpg-d5a01phr0fns7382ogd0-a.virginia-postgres.render.com
+[INIT] DATABASE_NAME: renewablezmart
+[INIT] DATABASE_URL: ***SET***
+[INIT] ===> ATTEMPTING TO FIX PRODUCTION DATABASE ENUM...
+
+========================================
+🔧 PRODUCTION DATABASE ENUM FIX
+========================================
+
+[PROD] Using DATABASE_URL for connection
+[PROD] Connecting to Postgres...
+[PROD] ✓ Connected
+
+[PROD] Step 1: Check current enum values
+[PROD] Running: SELECT unnest(enum_range(NULL::orders_paymentstatus_enum))
+[PROD] ✓ Current enum values: [ 'pending', 'paid', 'failed', 'refunded', 'completed' ]
+[PROD] ✓ 'paid' status: ✓ EXISTS
+
+[PROD] Step 3: Final verification
+[PROD] Running: SELECT unnest(enum_range(NULL::orders_paymentstatus_enum))
+[PROD] ✓ Final enum values: [ 'pending', 'paid', 'failed', 'refunded', 'completed' ]
+
+✅ SUCCESS: "paid" is now in enum!
+[PROD] Enum values: pending, paid, failed, refunded, completed
+
+[PROD] Step 4: Verifying enum type name
+[PROD] ✓ Enum type name: orders_paymentstatus_enum
+
+========================================
+✅ PRODUCTION DATABASE FIXED
+========================================
+[PROD] ✓ Enum contains: pending, paid, completed, failed, refunded
+[PROD] ✓ Database ready for backend restart
+
+
+[PROD] Connection closed
+
+[PRE_INIT] Connecting to PostgreSQL directly...
+[PRE_INIT] ✓ Direct connection established
+[PRE_INIT] Checking for data migrations needed...
+[PRE_INIT] Note: order table may not exist yet (first init)
+[PRE_INIT] ✓ Pre-initialization complete
+[PRE_INIT] ✓ Direct connection closed
+✅ Database connected successfully
+📊 TypeORM initialized
+[POST_INIT] ℹ️ Order table not found (will be created on next sync)
+[MIGRATION] Found 74 orders, checking if data needs updating...
+[MIGRATION] ✓ All orders already have buyer/store data
+
+🚀 Express server running on http://0.0.0.0:4000
+📚 API endpoint: http://localhost:4000/api
+🔄 Feed API: http://localhost:4000/api/feed
+🏥 Health check: http://localhost:4000/api/health
+📍 Locations API: http://localhost:4000/api/locations
+
+✅ Server is ready to accept requests
+
+[Cron] Starting product rotation cron jobs...
+[Cron] Cron jobs started successfully
+⏰ Feed ranking cron jobs started
+[Cron-Hourly] Starting hourly rotation job...
+[Rotation] Applied boost to 0 low-impression products
+[Cron-Hourly] Job complete: {
+  productsBoosted: 0,
+  feedHealth: {
+    totalProducts: 13,
+    approvedProducts: 12,
+    avgImpressions: 22,
+    avgCTR: '0.00%',
+    productsWithZeroImpressions: 5,
+    newestProduct: { name: 'Lithium ion battery ', ageHours: 68 }
+  },
+  duration: '1246ms'
+}
