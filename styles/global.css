@@ -1,0 +1,566 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Variables with fallback values */
+:root {
+  --primary-color: #ff9900;
+  --secondary-color: #f0f0f0;
+  --border-color: #ddd;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+:root {
+  --app-text-color: #111827;
+}
+
+.dark {
+  --secondary-color: #1f2937;
+  --border-color: #4b5563;
+  --app-text-color: #f3f4f6;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px; /* Ensure readable font size */
+}
+
+body {
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.6;
+  background: var(--secondary-color, #f5f5f5);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--app-text-color, #111827);
+}
+
+/* Dark mode background adjustments only */
+.dark body {
+  background-color: #1f2937;
+}
+
+/* Ensure emoji flags render properly */
+.emoji-flag {
+  font-family: "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Apple Color Emoji", sans-serif !important;
+  font-style: normal;
+  font-weight: normal;
+}
+
+/* Cross-browser line clamping */
+.line-clamp-2 {
+  display: -webkit-box;
+  display: -moz-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  display: -moz-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  display: -moz-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Keep prices on one line across screen sizes */
+.price-inline {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(12px, 3.4vw, 20px);
+}
+
+.price-inline-lg {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(16px, 4.8vw, 32px);
+}
+
+/* ========== COMPREHENSIVE FORM FIELD STYLING ========== */
+/* Base styling for all form elements */
+input,
+select,
+textarea,
+button {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: inherit;
+}
+
+/* === ALL INPUTS, SELECTS, TEXTAREAS - Light Mode === */
+html:not(.dark) input,
+html:not(.dark) textarea,
+html:not(.dark) select {
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
+  font-size: 16px !important; /* Prevent Safari zoom */
+  background-color: white !important;
+  border: 1px solid #d1d5db !important;
+}
+
+/* === PLACEHOLDERS - Light Mode === */
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder,
+::placeholder {
+  color: #4b5563 !important;
+  -webkit-text-fill-color: #4b5563 !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
+}
+
+/* === iOS AUTOFILL FIX - Light Mode === */
+html:not(.dark) input:-webkit-autofill,
+html:not(.dark) input:-webkit-autofill:hover,
+html:not(.dark) input:-webkit-autofill:focus,
+html:not(.dark) input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: #111827 !important;
+  color: #111827 !important;
+  font-weight: 500 !important;
+}
+
+html:not(.dark) input:-webkit-autofill::first-line {
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  color: #111827 !important;
+}
+
+/* === SELECT OPTIONS (Dropdown Items) === */
+html:not(.dark) select option {
+  color: #111827 !important;
+  background-color: white !important;
+  font-weight: 500 !important;
+}
+
+html:not(.dark) select option:checked {
+  background: linear-gradient(#ff9900, #ff9900) !important;
+  background-color: #ff9900 !important;
+  color: white !important;
+}
+
+/* === DARK MODE (class based, matches next-themes) === */
+.dark input,
+.dark textarea,
+.dark select {
+  color: #f3f4f6 !important;
+  -webkit-text-fill-color: #f3f4f6 !important;
+  background-color: #1f2937 !important;
+  border-color: #4b5563 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #1f2937 inset !important;
+  box-shadow: 0 0 0 30px #1f2937 inset !important;
+  -webkit-text-fill-color: #f3f4f6 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark select option {
+  color: #f3f4f6 !important;
+  background-color: #1f2937 !important;
+}
+
+.dark select option:checked {
+  background: linear-gradient(#ff9900, #ff9900) !important;
+  color: white !important;
+}
+
+/* ========== TYPOGRAPHY STYLING ========== */
+/* Only add font-weight and opacity, NO COLOR - let Tailwind handle colors */
+p {
+  font-weight: 600;
+  opacity: 1;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  opacity: 1;
+}
+
+li {
+  font-weight: 600;
+  opacity: 1;
+}
+
+label {
+  font-weight: 600;
+  opacity: 1;
+}
+
+/* Ensure links have proper styling */
+a {
+  opacity: 1;
+  text-decoration: none;
+}
+
+/* Print styles for better printing */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  
+  a {
+    text-decoration: underline;
+  }
+  
+  button, .no-print {
+    display: none;
+  }
+}
+.flex {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.flex-col {
+  -webkit-flex-direction: column;
+  -moz-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+}
+
+.flex-row {
+  -webkit-flex-direction: row;
+  -moz-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+}
+
+@keyframes rzSplashBg {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes rzSplashFloat {
+  0% {
+    transform: translateY(0);
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.28);
+  }
+  50% {
+    transform: translateY(-6px);
+    box-shadow: 0 26px 56px rgba(15, 23, 42, 0.34);
+  }
+  100% {
+    transform: translateY(0);
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.28);
+  }
+}
+
+@keyframes rzSplashPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.96;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.96;
+  }
+}
+
+/* Grid fallbacks */
+.grid {
+  display: -ms-grid;
+  display: grid;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+/* Hide scrollbar only for mobile quick tab strip in header */
+.quick-tabs-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.quick-tabs-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--secondary-color, #f1f1f1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color, #ff9900);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff8800;
+}
+
+/* Firefox scrollbar (basic support) */
+* {
+  scrollbar-color: var(--primary-color, #ff9900) var(--secondary-color, #f1f1f1);
+  scrollbar-width: thin;
+}
+
+/* Ensure buttons are accessible */
+button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+}
+
+button:focus {
+  outline: 2px solid var(--primary-color, #ff9900);
+  outline-offset: 2px;
+}
+
+/* Input accessibility */
+input, textarea, select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  font-family: inherit;
+  font-size: 16px; /* Prevents zoom on iOS */
+  caret-color: #111827;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  caret-color: #f3f4f6;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: 2px solid var(--primary-color, #ff9900);
+  outline-offset: 2px;
+}
+
+/* Fallback for CSS Grid in older browsers */
+@supports not (display: grid) {
+  .grid {
+    display: -webkit-box;
+    display: -moz-box;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  body {
+    color: #000;
+    background: #fff;
+  }
+}
+
+/* Stronger gray text contrast for readability across macOS/iOS */
+.text-gray-400 { color: #4b5563 !important; }
+.text-gray-500 { color: #374151 !important; }
+.text-gray-600 { color: #1f2937 !important; }
+.dark .text-gray-400 { color: #d1d5db !important; }
+.dark .text-gray-500 { color: #e5e7eb !important; }
+.dark .text-gray-600 { color: #f3f4f6 !important; }
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Categories Dropdown - Pure Hover Behavior */
+.category-wrapper {
+  position: relative;
+}
+
+.category-wrapper button {
+  position: relative;
+  z-index: 1;
+}
+
+.category-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  min-width: 280px;
+  z-index: 99999;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border-radius: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.category-dropdown.dark {
+  background: #1f2937;
+}
+
+.category-item {
+  position: relative;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-left: 4px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.category-item:hover {
+  background: #f5f5f5;
+  border-left-color: #fbbf24;
+}
+
+.category-item.dark:hover {
+  background: #374151;
+}
+
+.submenu {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  min-width: 240px;
+  background: white;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border-radius: 0.5rem;
+  z-index: 99999;
+  margin-left: 0.5rem;
+}
+
+.submenu.dark {
+  background: #1f2937;
+}
+
+/* Image optimization for mobile and Safari */
+img {
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-font-smoothing: antialiased;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  perspective: 1000;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Ensure images load properly on iOS */
+img[src] {
+  -webkit-user-select: none;
+  will-change: contents;
+}
+
+/* Logo and avatar styles */
+img.logo,
+img.avatar,
+img.store-logo {
+  -webkit-appearance: none;
+  border-radius: inherit;
+}
+
+/* Consistent green checkbox tick (restore native appearance) */
+input[type="checkbox"],
+input[type="radio"] {
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+  appearance: auto;
+  accent-color: #16a34a;
+}
+
+/* Fix for responsive images */
+@supports (object-fit: cover) {
+  img {
+    object-fit: cover;
+  }
+}
+
+/* ========== BODY STYLING - Core Text Properties ========== */
+/* Light Mode defaults */
+@media (prefers-color-scheme: light) {
+  body p:not([class*="text-"]),
+  body span:not([class*="text-"]),
+  body li:not([class*="text-"]) {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+}
+
+/* Dark Mode defaults */
+@media (prefers-color-scheme: dark) {
+  body p:not([class*="text-"]),
+  body span:not([class*="text-"]),
+  body li:not([class*="text-"]) {
+    font-weight: 600;
+  }
+}
+
+/* Print styles for better printing */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  
+  a {
+    text-decoration: underline;
+  }
+  
+  button, .no-print {
+    display: none;
+  }
+}
+

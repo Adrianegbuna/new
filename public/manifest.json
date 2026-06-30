@@ -1,0 +1,95 @@
+{
+  "name": "RenewableZmart - Renewable Energy Marketplace",
+  "short_name": "RenewableZmart",
+  "description": "Buy and sell renewable energy products, solar systems, inverters, and installation services in Africa",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#059669",
+  "background_color": "#ffffff",
+  "screenshots": [
+    {
+      "src": "/screenshots/screenshot-mobile.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "purpose": "any"
+    },
+    {
+      "src": "/screenshots/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "purpose": "any"
+    }
+  ],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23059669'/><circle cx='96' cy='96' r='60' fill='none' stroke='%2310b981' stroke-width='3'/><rect x='56' y='56' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='86' y='56' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='116' y='56' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='56' y='86' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='86' y='86' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='116' y='86' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='56' y='116' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='86' y='116' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='116' y='116' width='25' height='25' fill='%23ffffff' opacity='0.9'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23059669'/><circle cx='256' cy='256' r='160' fill='none' stroke='%2310b981' stroke-width='8'/><rect x='176' y='176' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='256' y='176' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='336' y='176' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='176' y='256' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='256' y='256' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='336' y='256' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='176' y='336' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='256' y='336' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='336' y='336' width='60' height='60' fill='%23ffffff' opacity='0.9'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23059669' rx='40'/><circle cx='96' cy='96' r='60' fill='none' stroke='%2310b981' stroke-width='3'/><rect x='56' y='56' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='86' y='56' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='116' y='56' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='56' y='86' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='86' y='86' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='116' y='86' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='56' y='116' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='86' y='116' width='25' height='25' fill='%23ffffff' opacity='0.9'/><rect x='116' y='116' width='25' height='25' fill='%23ffffff' opacity='0.9'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23059669' rx='100'/><circle cx='256' cy='256' r='160' fill='none' stroke='%2310b981' stroke-width='8'/><rect x='176' y='176' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='256' y='176' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='336' y='176' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='176' y='256' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='256' y='256' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='336' y='256' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='176' y='336' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='256' y='336' width='60' height='60' fill='%23ffffff' opacity='0.9'/><rect x='336' y='336' width='60' height='60' fill='%23ffffff' opacity='0.9'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["shopping", "productivity"],
+  "shortcuts": [
+    {
+      "name": "View Products",
+      "short_name": "Products",
+      "description": "Browse renewable energy products",
+      "url": "/?shortcut=products",
+      "icons": [
+        {
+          "src": "/icon-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "My Cart",
+      "short_name": "Cart",
+      "description": "View your shopping cart",
+      "url": "/cart?shortcut=cart",
+      "icons": [
+        {
+          "src": "/icon-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Track Order",
+      "short_name": "Track",
+      "description": "Track your orders",
+      "url": "/track-order?shortcut=track",
+      "icons": [
+        {
+          "src": "/icon-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

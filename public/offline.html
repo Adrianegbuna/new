@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - RenewableZmart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .offline-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 40px 20px;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .offline-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: #f3f4f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+        
+        h1 {
+            color: #111827;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        p {
+            color: #6b7280;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        
+        .offline-tips {
+            background: #f9fafb;
+            border-left: 4px solid #059669;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+            border-radius: 8px;
+        }
+        
+        .offline-tips h3 {
+            color: #059669;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .offline-tips ul {
+            list-style: none;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .offline-tips li {
+            margin-bottom: 8px;
+        }
+        
+        .offline-tips li:before {
+            content: "✓ ";
+            color: #059669;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        button {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 20px;
+        }
+        
+        button:hover {
+            background: #047857;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        @media (max-width: 600px) {
+            .offline-container {
+                padding: 30px 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            p {
+                font-size: 14px;
+            }
+            
+            .offline-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📡</div>
+        <h1>You're Offline</h1>
+        <p>It looks like you've lost your internet connection. Don't worry, here's what you can do:</p>
+        
+        <div class="offline-tips">
+            <h3>Available Offline:</h3>
+            <ul>
+                <li>View previously loaded pages</li>
+                <li>Check your cart and wishlist</li>
+                <li>Read product descriptions you've viewed</li>
+                <li>Access your saved preferences</li>
+            </ul>
+        </div>
+        
+        <div class="offline-tips">
+            <h3>When Back Online:</h3>
+            <ul>
+                <li>Your data will sync automatically</li>
+                <li>You can complete your purchases</li>
+                <li>Track your orders in real-time</li>
+            </ul>
+        </div>
+        
+        <p style="margin-top: 30px; color: #9ca3af; font-size: 14px;">
+            💡 Tip: Turn off airplane mode or move to a location with better signal
+        </p>
+        
+        <button onclick="goBack()">Go Back</button>
+    </div>
+    
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+        
+        // Check connection status
+        window.addEventListener('online', function() {
+            console.log('Connection restored');
+            // Optionally redirect to home
+            // window.location.href = '/';
+        });
+        
+        window.addEventListener('offline', function() {
+            console.log('Connection lost');
+        });
+    </script>
+</body>
+</html>
