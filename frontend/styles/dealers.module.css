@@ -1,0 +1,161 @@
+.dealersContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 24px 0;
+  opacity: 1;
+  text-rendering: optimizeLegibility;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 24px;
+}
+
+.filtersSidebar {
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+}
+
+.filtersTitle {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  opacity: 1;
+}
+
+.dealersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.dealerCard {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.dealerCard:hover {
+  border-color: #27ae60;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.12);
+}
+
+.dealerName {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+  opacity: 1;
+}
+
+.dealerLocation {
+  font-size: 14px;
+  color: #2d3748;
+  margin: 0 0 8px 0;
+  opacity: 1;
+  font-weight: 500;
+}
+
+.dealerPhone {
+  font-size: 14px;
+  color: #27ae60;
+  margin: 0;
+  font-weight: 500;
+  opacity: 1;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .dealersContainer {
+    padding: 12px;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .filtersSidebar {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .dealersGrid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .dealerCard {
+    padding: 16px;
+  }
+
+  .dealerName {
+    font-size: 16px;
+  }
+
+  .dealerLocation,
+  .dealerPhone {
+    font-size: 13px;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .dealersContainer {
+    background: #1a1a1a;
+  }
+
+  .pageTitle,
+  .filtersTitle {
+    color: #fff;
+  }
+
+  .dealerCard {
+    background: #222;
+    border-color: #333;
+  }
+
+  .dealerCard:hover {
+    border-color: #4CAF50;
+  }
+
+  .dealerName {
+    color: #fff;
+  }
+
+  .dealerLocation {
+    color: #aaa;
+  }
+
+  .dealerPhone {
+    color: #4CAF50;
+  }
+}
+
+/* High contrast */
+@media (prefers-contrast: more) {
+  .pageTitle,
+  .filtersTitle {
+    font-weight: 900;
+  }
+
+  .dealerName {
+    font-weight: 700;
+  }
+}

@@ -1,0 +1,142 @@
+.productsContainer {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.filtersSidebar {
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+}
+
+.filtersTitle {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  opacity: 1;
+  text-rendering: optimizeLegibility;
+}
+
+.productsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.productCard {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.productCard:hover {
+  border-color: #27ae60;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.12);
+}
+
+.productImage {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.productName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 6px 0;
+  opacity: 1;
+  line-height: 1.4;
+}
+
+.productPrice {
+  font-size: 16px;
+  font-weight: 700;
+  color: #27ae60;
+  margin: 0 0 6px 0;
+  opacity: 1;
+}
+
+.productRating {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+  opacity: 1;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .productsContainer {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 16px;
+  }
+
+  .filtersSidebar {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .productsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .productCard {
+    padding: 10px;
+  }
+
+  .productImage {
+    height: 140px;
+  }
+
+  .productName {
+    font-size: 13px;
+  }
+
+  .productPrice {
+    font-size: 14px;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .productsContainer {
+    background: #1a1a1a;
+  }
+
+  .filtersTitle {
+    color: #fff;
+  }
+
+  .productCard {
+    background: #222;
+    border-color: #333;
+  }
+
+  .productCard:hover {
+    border-color: #4CAF50;
+  }
+
+  .productName {
+    color: #fff;
+  }
+
+  .productRating {
+    color: #aaa;
+  }
+}

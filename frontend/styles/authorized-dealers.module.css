@@ -1,0 +1,151 @@
+.dealersContainer {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.pageTitle {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 30px 0;
+  text-rendering: optimizeLegibility;
+}
+
+.dealersList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.dealerCard {
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.dealerCard:hover {
+  border-color: #27ae60;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.12);
+  transform: translateY(-2px);
+}
+
+.dealerName {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+  opacity: 1;
+}
+
+.dealerLocation {
+  font-size: 14px;
+  color: #2d3748;
+  margin: 0 0 6px 0;
+  opacity: 1;
+  font-weight: 500;
+}
+
+.dealerPhone {
+  font-size: 14px;
+  color: #27ae60;
+  margin: 0;
+  font-weight: 500;
+  opacity: 1;
+}
+
+.noResults {
+  text-align: center;
+  font-size: 16px;
+  color: #2d3748;
+  padding: 40px 20px;
+  font-weight: 500;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .dealersContainer {
+    padding: 20px 16px;
+  }
+
+  .pageTitle {
+    font-size: 24px;
+  }
+
+  .dealerCard {
+    padding: 16px;
+  }
+
+  .dealerName {
+    font-size: 18px;
+  }
+
+  .dealerLocation,
+  .dealerPhone {
+    font-size: 13px;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .dealersContainer {
+    background: #1a1a1a;
+  }
+
+  .pageTitle {
+    color: #fff;
+  }
+
+  .dealerCard {
+    background: #222;
+    border-color: #333;
+  }
+
+  .dealerCard:hover {
+    border-color: #4CAF50;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+  }
+
+  .dealerName {
+    color: #fff;
+  }
+
+  .dealerLocation {
+    color: #bbb;
+  }
+
+  .dealerPhone {
+    color: #4CAF50;
+  }
+
+  .noResults {
+    color: #aaa;
+    font-weight: 500;
+  }
+}
+
+/* High contrast mode for accessibility */
+@media (prefers-contrast: more) {
+  .dealerName {
+    font-weight: 700;
+  }
+
+  .dealerLocation,
+  .dealerPhone {
+    font-weight: 600;
+  }
+}
+
+/* Safari-specific fixes */
+@supports (-webkit-appearance: none) {
+  .dealerCard {
+    -webkit-appearance: none;
+    -webkit-user-select: text;
+  }
+}
