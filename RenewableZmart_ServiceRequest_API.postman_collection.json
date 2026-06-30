@@ -1,0 +1,425 @@
+{
+  "info": {
+    "name": "RenewableZmart Service Request System",
+    "description": "Complete API testing for service requests management system",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login as Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:4000/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login and get JWT token for customer"
+          }
+        },
+        {
+          "name": "Login as Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"AdminPass123!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:4000/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login and get JWT token for admin"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Service Requests",
+      "item": [
+        {
+          "name": "Create Service Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_JWT_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+234801234567\",\n  \"serviceType\": \"Solar Installation\",\n  \"message\": \"I need to install a 5kW solar system on my roof. I have a budget of ₦2,000,000 and need it done within 2 weeks.\",\n  \"role\": \"customer\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:4000/api/service-requests",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "service-requests"]
+            },
+            "description": "Create a new service request as a customer"
+          }
+        },
+        {
+          "name": "Get My Service Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_JWT_TOKEN_HERE"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:4000/api/service-requests/my",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "service-requests", "my"]
+            },
+            "description": "Get all service requests for logged-in user"
+          }
+        },
+        {
+          "name": "Get Service Request by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_JWT_TOKEN_HERE"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:4000/api/service-requests/REQUEST_ID_HERE",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "service-requests", "REQUEST_ID_HERE"]
+            },
+            "description": "Get a specific service request by ID (requires ownership or admin role)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Service Requests Management",
+      "item": [
+        {
+          "name": "Get All Service Requests (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_ADMIN_JWT_TOKEN_HERE"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:4000/api/admin/service-requests?status=pending",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "admin", "service-requests"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "disabled": false
+                },
+                {
+                  "key": "assignedTo",
+                  "value": "INSTALLER_ID_HERE",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all service requests with optional filters (admin only)"
+          }
+        },
+        {
+          "name": "Update Service Request Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_ADMIN_JWT_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\",\n  \"note\": \"Request approved. Assigning to available installer.\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:4000/api/admin/service-requests/REQUEST_ID_HERE/status",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "admin", "service-requests", "REQUEST_ID_HERE", "status"]
+            },
+            "description": "Update service request status (admin only)\nStatus options: pending, approved, assigned, in_progress, completed, rejected"
+          }
+        },
+        {
+          "name": "Assign Service Request to Installer (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_ADMIN_JWT_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignToUserId\": \"INSTALLER_USER_ID_HERE\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:4000/api/admin/service-requests/REQUEST_ID_HERE/assign",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "admin", "service-requests", "REQUEST_ID_HERE", "assign"]
+            },
+            "description": "Assign a service request to an installer (admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_JWT_TOKEN_HERE"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:4000/api/notifications?unreadOnly=false",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "notifications"],
+              "query": [
+                {
+                  "key": "unreadOnly",
+                  "value": "false",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Get all notifications for logged-in user (set unreadOnly=true for unread only)"
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_JWT_TOKEN_HERE"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:4000/api/notifications/NOTIFICATION_ID_HERE/read",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "notifications", "NOTIFICATION_ID_HERE", "read"]
+            },
+            "description": "Mark a notification as read"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Example Workflows",
+      "item": [
+        {
+          "name": "Complete Service Request Flow - Step 1: Submit Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer CUSTOMER_TOKEN"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Chioma Okafor\",\n  \"email\": \"chioma@email.com\",\n  \"phone\": \"+2348012345678\",\n  \"serviceType\": \"Solar Installation\",\n  \"message\": \"I want to install a 10kW solar system with battery backup for my home. I need professional installation.\",\n  \"role\": \"customer\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:4000/api/service-requests",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "service-requests"]
+            },
+            "description": "Step 1: Customer submits a service request"
+          }
+        },
+        {
+          "name": "Complete Service Request Flow - Step 2: Admin Approves",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer ADMIN_TOKEN"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\",\n  \"note\": \"Request approved and verified. Proceeding with assignment.\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:4000/api/admin/service-requests/REQUEST_ID/status",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "admin", "service-requests", "REQUEST_ID", "status"]
+            },
+            "description": "Step 2: Admin approves the service request"
+          }
+        },
+        {
+          "name": "Complete Service Request Flow - Step 3: Assign to Installer",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer ADMIN_TOKEN"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignToUserId\": \"INSTALLER_ID_UUID\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:4000/api/admin/service-requests/REQUEST_ID/assign",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "admin", "service-requests", "REQUEST_ID", "assign"]
+            },
+            "description": "Step 3: Admin assigns to an available installer"
+          }
+        },
+        {
+          "name": "Complete Service Request Flow - Step 4: Mark as In Progress",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer ADMIN_TOKEN"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_progress\",\n  \"note\": \"Installation work has commenced at customer location.\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:4000/api/admin/service-requests/REQUEST_ID/status",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "admin", "service-requests", "REQUEST_ID", "status"]
+            },
+            "description": "Step 4: Mark service as in progress"
+          }
+        },
+        {
+          "name": "Complete Service Request Flow - Step 5: Mark as Completed",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer ADMIN_TOKEN"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\",\n  \"note\": \"Installation completed successfully. System tested and operational.\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:4000/api/admin/service-requests/REQUEST_ID/status",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4000",
+              "path": ["api", "admin", "service-requests", "REQUEST_ID", "status"]
+            },
+            "description": "Step 5: Mark service as completed"
+          }
+        }
+      ]
+    }
+  ]
+}

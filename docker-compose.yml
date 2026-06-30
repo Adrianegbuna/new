@@ -1,0 +1,47 @@
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ecommerce_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Mthrx1z3@
+      POSTGRES_DB: ecommerce_db
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ecommerce_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ecommerce_redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - ecommerce_network
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.5
+    container_name: ecommerce_meilisearch
+    environment:
+      MEILI_MASTER_KEY: masterKey
+      MEILI_ENV: development
+    ports:
+      - '7700:7700'
+    volumes:
+      - meilisearch_data:/meili_data
+    networks:
+      - ecommerce_network
+
+volumes:
+  postgres_data:
+  redis_data:
+  meilisearch_data:
+
+networks:
+  ecommerce_network:
+    driver: bridge

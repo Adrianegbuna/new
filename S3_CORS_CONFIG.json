@@ -1,0 +1,14 @@
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+    "AllowedOrigins": [
+      "https://renewablezmart.com",
+      "https://*.renewablezmart.com",
+      "https://renewablezmart.vercel.app",
+      "http://localhost:3000"
+    ],
+    "ExposeHeaders": ["ETag", "x-amz-version-id", "x-amz-request-id"],
+    "MaxAgeSeconds": 3000
+  }
+]

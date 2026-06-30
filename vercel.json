@@ -1,0 +1,9 @@
+{
+  "buildCommand": "next build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://renewablezmart-backend.onrender.com/api",
+    "NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY": "pk_live_ecabf06a2b91bdcbff9f84f5ccc340b6e3e6750e"
+  }
+}

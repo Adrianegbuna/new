@@ -1,0 +1,67 @@
+services:
+  # Backend API Service
+  - type: web
+    name: renewablezmart-backend
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: cd backend && npm install --production=false && npm run build
+    startCommand: cd backend && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: DATABASE_HOST
+        fromDatabase:
+          name: renewablezmart-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: renewablezmart-db
+          property: port
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: renewablezmart-db
+          property: database
+      - key: DATABASE_USER
+        fromDatabase:
+          name: renewablezmart-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: renewablezmart-db
+          property: password
+      - key: DATABASE_SSL
+        value: true
+      - key: DATABASE_SYNC
+        value: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://renewablezmart.com
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_S3_BUCKET_NAME
+        value: renewablezmart
+      - key: AWS_S3_REGION
+        value: eu-west-2
+      - key: AWS_S3_URL
+        value: https://renewablezmart.s3.eu-west-2.amazonaws.com
+
+databases:
+  - name: renewablezmart-db
+    databaseName: ecommerce_db
+    plan: starter
+    region: oregon
