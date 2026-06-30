@@ -1,0 +1,272 @@
+﻿import Head from 'next/head'
+import { useState, useEffect } from 'react'
+import Header from '../components/Header'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import { useCurrency } from '../context/CurrencyContext'
+import { getApiBaseUrl } from '@/lib/apiConfig'
+import { useAuthStore } from '@/store/authStore'
+
+interface Product {
+  id: string
+  name: string
+  description: string
+  price: number
+  image: string
+  category: string
+  stock: number
+  country: string
+  city: string
+  approvalStatus: string
+  createdAt: string
+  store: {
+    id: string
+    name: string
+    ownerId: string
+  }
+}
+
+export default function AdminProductApproval() {
+  const router = useRouter()
+  const { formatPrice } = useCurrency()
+  const { user, token, isHydrated } = useAuthStore()
+  const [pendingProducts, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filterCountry, setFilterCountry] = useState('all')
+  const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return
+    }
+
+    if (!user || !token) {
+      router.push('/login')
+      return
+    }
+    
+    // Check if user is admin
+    if (user.role !== 'admin') {
+      router.push('/')
+      return
+    }
+    
+    fetchPendingProducts(token)
+  }, [isHydrated, user, token, router])
+
+  const fetchPendingProducts = async (token: string) => {
+    try {
+      const apiBase = getApiBaseUrl()
+      const response = await fetch(`${apiBase}/admin/products/pending`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setProducts(data)
+      }
+
+      setLoading(false)
+    } catch (error) {
+      console.error('Error fetching pending products:', error)
+      setLoading(false)
+    }
+  }
+
+  const handleApproval = async (productId: string, approved: boolean) => {
+    try {
+      const apiBase = getApiBaseUrl()
+      const response = await fetch(`${apiBase}/admin/approve-product/${productId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token!}`
+        },
+        body: JSON.stringify({ approved })
+      })
+
+      if (response.ok) {
+        // Remove product from list
+        setProducts(pendingProducts.filter(p => p.id !== productId))
+        setMessage(approved ? 'Product approved successfully!' : 'Product rejected')
+        
+        setTimeout(() => setMessage(''), 3000)
+      } else {
+        setMessage('Failed to process approval')
+      }
+    } catch (error) {
+      console.error('Error approving product:', error)
+      setMessage('Error processing approval')
+    }
+  }
+
+  const filteredProducts = filterCountry === 'all' 
+    ? pendingProducts 
+    : pendingProducts.filter(p => p.country === filterCountry)
+
+  const countries = [...new Set(pendingProducts.map(p => p.country))]
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">Loading...</div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Head>
+        <title>Product Approval - Admin Dashboard</title>
+      </Head>
+
+      <Header />
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Product Approval Queue</h1>
+              <p className="text-gray-900 font-bold text-base">Review and approve products for marketplace display</p>
+            </div>
+            <Link href="/admin-dashboard" className="bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition">
+              ← Back to Dashboard
+            </Link>
+          </div>
+
+          {message && (
+            <div className={`p-4 rounded-lg mb-4 ${
+              message.includes('?') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`}>
+              {message}
+            </div>
+          )}
+
+          {/* Filter */}
+          <div className="bg-white rounded-lg shadow p-4 mb-6">
+            <div className="flex items-center gap-4">
+              <label className="font-bold text-gray-900 text-base">Filter by Country:</label>
+              <select
+                value={filterCountry}
+                onChange={(e) => setFilterCountry(e.target.value)}
+                className="px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:border-teal-500 bg-white dark:bg-gray-800 text-black dark:text-white font-semibold"
+              >
+                <option value="all">All Countries ({pendingProducts.length})</option>
+                {countries.map(country => (
+                  <option key={country} value={country}>
+                    {country} ({pendingProducts.filter(p => p.country === country).length})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Products Grid */}
+        {filteredProducts.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-12 text-center">
+            <div className="text-6xl mb-4">?</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">All Caught Up!</h2>
+            <p className="text-gray-900 font-bold text-base">No pending products for approval at the moment.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProducts.map(product => (
+              <div key={product.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+                {/* Product Image */}
+                <div className="relative h-48 bg-gray-200">
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-900 font-bold text-lg">
+                      No Image
+                    </div>
+                  )}
+                  <div className="absolute top-2 right-2 bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                    PENDING
+                  </div>
+                </div>
+
+                {/* Product Info */}
+                <div className="p-4">
+                  <h3 className="font-bold text-lg mb-2 text-gray-900 truncate">{product.name}</h3>
+                  <p className="text-sm text-gray-900 font-bold mb-3 line-clamp-2">{product.description}</p>
+                  
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-900 font-bold">Price:</span>
+                      <span className="font-bold text-teal-700 text-base">{formatPrice(product.price)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-900 font-bold">Stock:</span>
+                      <span className="font-bold text-gray-900">{product.stock} units</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-900 font-bold">Category:</span>
+                      <span className="font-bold text-gray-900">{product.category}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-900 font-bold">Location:</span>
+                      <span className="font-bold text-gray-900">{product.city}, {product.country}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-900 font-bold">Store:</span>
+                      <span className="font-bold text-gray-900 truncate">{product.store?.name}</span>
+                    </div>
+                  </div>
+
+                  {/* Approval Buttons */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => handleApproval(product.id, true)}
+                      className="bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center justify-center gap-1"
+                    >
+                      <span>✓</span>
+                      <span>Approve</span>
+                    </button>
+                    <button
+                      onClick={() => handleApproval(product.id, false)}
+                      className="bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center gap-1"
+                    >
+                      <span>✗</span>
+                      <span>Reject</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Summary */}
+        <div className="mt-8 bg-white rounded-lg shadow p-6">
+          <h3 className="font-bold text-lg mb-4 text-gray-900">Approval Summary</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border rounded-lg p-4">
+              <div className="text-sm text-gray-900 font-bold mb-1">Total Pending</div>
+              <div className="text-2xl font-bold text-yellow-700">{pendingProducts.length}</div>
+            </div>
+            <div className="border rounded-lg p-4">
+              <div className="text-sm text-gray-900 font-bold mb-1">Countries</div>
+              <div className="text-2xl font-bold text-blue-700">{countries.length}</div>
+            </div>
+            <div className="border rounded-lg p-4">
+              <div className="text-sm text-gray-900 font-bold mb-1">Currently Viewing</div>
+              <div className="text-2xl font-bold text-teal-700">{filteredProducts.length}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
+

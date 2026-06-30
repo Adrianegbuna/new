@@ -1,0 +1,607 @@
+﻿import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { apiClient } from '@/lib/api-client';
+import Head from 'next/head';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { useAuthStore } from '../store/authStore';
+
+interface SalesData {
+  date: string;
+  revenue: number;
+  orders: number;
+  customers: number;
+}
+
+interface ProductPerformance {
+  productId: string;
+  productName: string;
+  category: string;
+  unitsSold: number;
+  revenue: number;
+  rating: number;
+  stockLevel: number;
+}
+
+interface AnalyticsData {
+  totalRevenue: number;
+  totalOrders: number;
+  totalCustomers: number;
+  averageOrderValue: number;
+  conversionRate: number;
+  returnRate: number;
+  customerSatisfaction: number;
+  salesTrend: SalesData[];
+  topProducts: ProductPerformance[];
+  categoryPerformance: Array<{
+    category: string;
+    revenue: number;
+    percentage: number;
+  }>;
+}
+
+export default function AdminAnalytics() {
+  const router = useRouter();
+  const { token, user, isHydrated } = useAuthStore();
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [dateRange, setDateRange] = useState('30days');
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    if (!user?.role || user.role !== 'admin') {
+      router.replace('/login');
+      return;
+    }
+    fetchAnalytics();
+  }, [isHydrated, user, token, dateRange, router]);
+
+  const fetchAnalytics = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/analytics?dateRange=${dateRange}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAnalytics(response.data.data);
+    } catch (error) {
+      console.error('Failed to fetch analytics:', error);
+      setMessage('Displaying sample analytics data');
+      setSampleAnalytics();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setSampleAnalytics = () => {
+    const sampleData: AnalyticsData = {
+      totalRevenue: 8750000,
+      totalOrders: 245,
+      totalCustomers: 312,
+      averageOrderValue: 35714,
+      conversionRate: 2.4,
+      returnRate: 3.2,
+      customerSatisfaction: 4.6,
+      salesTrend: [
+        { date: 'Jan 1', revenue: 250000, orders: 8, customers: 12 },
+        { date: 'Jan 5', revenue: 420000, orders: 15, customers: 22 },
+        { date: 'Jan 10', revenue: 580000, orders: 20, customers: 35 },
+        { date: 'Jan 15', revenue: 750000, orders: 25, customers: 48 },
+        { date: 'Jan 20', revenue: 920000, orders: 35, customers: 62 },
+        { date: 'Jan 25', revenue: 1100000, orders: 42, customers: 82 },
+        { date: 'Jan 30', revenue: 1250000, orders: 48, customers: 98 },
+        { date: 'Today', revenue: 8750000, orders: 245, customers: 312 }
+      ],
+      topProducts: [
+        {
+          productId: 'PROD001',
+          productName: 'Hybrid Solar Panel 400W',
+          category: 'Solar Panels',
+          unitsSold: 45,
+          revenue: 2025000,
+          rating: 4.8,
+          stockLevel: 12
+        },
+        {
+          productId: 'PROD002',
+          productName: 'Inverter 5KVA',
+          category: 'Inverters',
+          unitsSold: 32,
+          revenue: 1920000,
+          rating: 4.7,
+          stockLevel: 8
+        },
+        {
+          productId: 'PROD003',
+          productName: 'MPPT Charge Controller 60A',
+          category: 'Charge Controllers',
+          unitsSold: 28,
+          revenue: 1120000,
+          rating: 4.6,
+          stockLevel: 15
+        },
+        {
+          productId: 'PROD004',
+          productName: 'Lithium Battery 5KWh',
+          category: 'Batteries',
+          unitsSold: 22,
+          revenue: 1760000,
+          rating: 4.9,
+          stockLevel: 5
+        },
+        {
+          productId: 'PROD005',
+          productName: 'LED Street Light 100W Solar',
+          category: 'Lighting',
+          unitsSold: 38,
+          revenue: 760000,
+          rating: 4.5,
+          stockLevel: 28
+        }
+      ],
+      categoryPerformance: [
+        { category: 'Solar Panels', revenue: 2880000, percentage: 32.9 },
+        { category: 'Inverters', revenue: 1920000, percentage: 21.9 },
+        { category: 'Batteries', revenue: 1760000, percentage: 20.1 },
+        { category: 'Charge Controllers', revenue: 1120000, percentage: 12.8 },
+        { category: 'Lighting', revenue: 760000, percentage: 8.7 },
+        { category: 'Cables & Accessories', revenue: 310000, percentage: 3.6 }
+      ]
+    };
+    setAnalytics(sampleData);
+  };
+
+  const downloadReport = (format: 'csv' | 'pdf') => {
+    if (!analytics) return;
+
+    if (format === 'csv') {
+      const csv = [
+        ['Sales Analytics Report', `Period: ${dateRange}`],
+        [''],
+        ['Metric', 'Value'],
+        ['Total Revenue', `?${analytics.totalRevenue.toLocaleString()}`],
+        ['Total Orders', analytics.totalOrders],
+        ['Total Customers', analytics.totalCustomers],
+        ['Average Order Value', `?${analytics.averageOrderValue.toLocaleString()}`],
+        ['Conversion Rate', `${analytics.conversionRate}%`],
+        ['Return Rate', `${analytics.returnRate}%`],
+        ['Customer Satisfaction', `${analytics.customerSatisfaction}/5`],
+        [''],
+        ['Top Products'],
+        ['Product Name', 'Category', 'Units Sold', 'Revenue', 'Rating'],
+        ...analytics.topProducts.map((p) => [
+          p.productName,
+          p.category,
+          p.unitsSold,
+          `?${p.revenue.toLocaleString()}`,
+          p.rating
+        ])
+      ]
+        .map((row) => row.join(','))
+        .join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `analytics-report-${dateRange}.csv`;
+      a.click();
+    } else if (format === 'pdf') {
+      try {
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        let yPosition = 15;
+
+        // Header
+        doc.setFontSize(16);
+        doc.setTextColor(44, 62, 80);
+        doc.text('Sales Analytics Report', pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 8;
+
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Period: ${dateRange} | Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 12;
+
+        // Key Metrics Section
+        doc.setFontSize(12);
+        doc.setTextColor(44, 62, 80);
+        doc.text('Key Performance Metrics', 15, yPosition);
+        yPosition += 8;
+
+        const metricsData = [
+          ['Metric', 'Value'],
+          ['Total Revenue', `?${analytics.totalRevenue.toLocaleString()}`],
+          ['Total Orders', analytics.totalOrders.toString()],
+          ['Total Customers', analytics.totalCustomers.toString()],
+          ['Average Order Value', `?${analytics.averageOrderValue.toLocaleString()}`],
+          ['Conversion Rate', `${analytics.conversionRate}%`],
+          ['Return Rate', `${analytics.returnRate}%`],
+          ['Customer Satisfaction', `${analytics.customerSatisfaction}/5.0`]
+        ];
+
+        (doc as any).autoTable({
+          startY: yPosition,
+          head: [metricsData[0]],
+          body: metricsData.slice(1),
+          theme: 'grid',
+          headStyles: { fillColor: [244, 130, 31], textColor: 255, fontStyle: 'bold' },
+          bodyStyles: { textColor: 50 },
+          columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 80 } },
+          margin: { left: 15, right: 15 },
+        });
+
+        yPosition = (doc as any).lastAutoTable.finalY + 12;
+
+        // Top Products Section
+        doc.setFontSize(12);
+        doc.setTextColor(44, 62, 80);
+        doc.text('Top 5 Products', 15, yPosition);
+        yPosition += 8;
+
+        const productsData = [
+          ['Product Name', 'Category', 'Units Sold', 'Revenue', 'Rating'],
+          ...analytics.topProducts.map((p) => [
+            p.productName,
+            p.category,
+            p.unitsSold.toString(),
+            `?${p.revenue.toLocaleString()}`,
+            p.rating.toString()
+          ])
+        ];
+
+        (doc as any).autoTable({
+          startY: yPosition,
+          head: [productsData[0]],
+          body: productsData.slice(1),
+          theme: 'grid',
+          headStyles: { fillColor: [244, 130, 31], textColor: 255, fontStyle: 'bold' },
+          bodyStyles: { textColor: 50 },
+          columnStyles: {
+            0: { cellWidth: 50 },
+            1: { cellWidth: 30 },
+            2: { cellWidth: 25 },
+            3: { cellWidth: 35 },
+            4: { cellWidth: 20 }
+          },
+          margin: { left: 15, right: 15 },
+        });
+
+        yPosition = (doc as any).lastAutoTable.finalY + 12;
+
+        // Category Performance Section
+        if (yPosition > pageHeight - 40) {
+          doc.addPage();
+          yPosition = 15;
+        }
+
+        doc.setFontSize(12);
+        doc.setTextColor(44, 62, 80);
+        doc.text('Category Performance', 15, yPosition);
+        yPosition += 8;
+
+        const categoryData = [
+          ['Category', 'Revenue', 'Percentage'],
+          ...analytics.categoryPerformance.map((c) => [
+            c.category,
+            `?${c.revenue.toLocaleString()}`,
+            `${c.percentage}%`
+          ])
+        ];
+
+        (doc as any).autoTable({
+          startY: yPosition,
+          head: [categoryData[0]],
+          body: categoryData.slice(1),
+          theme: 'grid',
+          headStyles: { fillColor: [244, 130, 31], textColor: 255, fontStyle: 'bold' },
+          bodyStyles: { textColor: 50 },
+          columnStyles: {
+            0: { cellWidth: 70 },
+            1: { cellWidth: 45 },
+            2: { cellWidth: 35 }
+          },
+          margin: { left: 15, right: 15 },
+        });
+
+        // Footer
+        const totalPages = (doc as any).getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+          doc.setPage(i);
+          doc.setFontSize(9);
+          doc.setTextColor(150, 150, 150);
+          doc.text(
+            `Page ${i} of ${totalPages}`,
+            pageWidth / 2,
+            pageHeight - 10,
+            { align: 'center' }
+          );
+        }
+
+        // Save PDF
+        doc.save(`analytics-report-${dateRange}-${new Date().getTime()}.pdf`);
+        setMessage('PDF report generated successfully!');
+        setTimeout(() => setMessage(''), 3000);
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        setMessage('Failed to generate PDF report');
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-black font-bold">Loading analytics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!analytics) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-black font-bold">No data available</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Head>
+        <title>Analytics & Reports - Admin</title>
+      </Head>
+
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        <Header />
+        <main className="flex-1 container mx-auto px-4 py-8">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900">📊 Analytics & Reports</h1>
+              <p className="text-black font-bold">Monitor sales performance and business metrics</p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <select
+                  value={dateRange}
+                  onChange={(e) => setDateRange(e.target.value)}
+                  className="px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-black dark:text-white font-semibold"
+                >
+                  <option value="7days">Last 7 Days</option>
+                  <option value="30days">Last 30 Days</option>
+                  <option value="90days">Last 90 Days</option>
+                  <option value="1year">Last Year</option>
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => downloadReport('csv')}
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition text-sm"
+                >
+                  📥 CSV Export
+                </button>
+                <button
+                  onClick={() => downloadReport('pdf')}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition text-sm"
+                >
+                  📄 PDF Export
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {message && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-700">
+              {message}
+            </div>
+          )}
+
+          {/* Key Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <p className="text-black font-bold text-sm">Total Revenue</p>
+              <p className="text-3xl font-bold text-orange-600 mt-2">?{(analytics.totalRevenue / 1000000).toFixed(1)}M</p>
+              <p className="text-xs text-black font-bold mt-2">+12.5% from last period</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <p className="text-black font-bold text-sm">Total Orders</p>
+              <p className="text-3xl font-bold text-blue-600 mt-2">{analytics.totalOrders.toLocaleString()}</p>
+              <p className="text-xs text-black font-bold mt-2">Average: ?{analytics.averageOrderValue.toLocaleString()}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <p className="text-black font-bold text-sm">Total Customers</p>
+              <p className="text-3xl font-bold text-green-600 mt-2">{analytics.totalCustomers.toLocaleString()}</p>
+              <p className="text-xs text-black font-bold mt-2">+8.3% from last period</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <p className="text-black font-bold text-sm">Customer Satisfaction</p>
+              <p className="text-3xl font-bold text-purple-600 mt-2">{analytics.customerSatisfaction}/5.0</p>
+              <p className="text-xs text-black font-bold mt-2">⭐ Based on reviews</p>
+            </div>
+          </div>
+
+          {/* Secondary Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <p className="text-black font-bold text-sm">Conversion Rate</p>
+              <p className="text-3xl font-bold text-indigo-600 mt-2">{analytics.conversionRate}%</p>
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                <div
+                  className="bg-indigo-600 h-2 rounded-full"
+                  style={{ width: `${Math.min(analytics.conversionRate * 10, 100)}%` }}
+                ></div>
+              </div>
+            </div>
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <p className="text-black font-bold text-sm">Return Rate</p>
+              <p className="text-3xl font-bold text-red-600 mt-2">{analytics.returnRate}%</p>
+              <p className="text-xs text-black font-bold mt-3">Below industry average (5.2%)</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <p className="text-black font-bold text-sm">Average Order Value</p>
+              <p className="text-3xl font-bold text-green-600 mt-2">?{(analytics.averageOrderValue / 1000).toFixed(1)}K</p>
+              <p className="text-xs text-black font-bold mt-3">+5.2% from last period</p>
+            </div>
+          </div>
+
+          {/* Sales Trend Chart (Text-based) */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">📈 Sales Trend</h2>
+            <div className="space-y-3">
+              {analytics.salesTrend.map((point, idx) => (
+                <div key={idx}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-bold text-gray-900">{point.date}</span>
+                    <span className="text-sm text-black font-bold">
+                      ?{(point.revenue / 1000000).toFixed(2)}M | {point.orders} orders
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-gradient-to-r from-orange-400 to-orange-600 h-3 rounded-full"
+                      style={{ width: `${(point.revenue / analytics.salesTrend[analytics.salesTrend.length - 1].revenue) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Category Performance */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">📊 Category Performance</h2>
+              <div className="space-y-3">
+                {analytics.categoryPerformance.map((cat, idx) => (
+                  <div key={idx}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-bold text-gray-900">{cat.category}</span>
+                      <span className="text-sm font-bold text-gray-900">
+                        {cat.percentage}% (?{(cat.revenue / 1000000).toFixed(1)}M)
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full"
+                        style={{ width: `${cat.percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Pie Chart (Text Summary) */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">💰 Revenue Distribution</h2>
+              <div className="space-y-3">
+                {analytics.categoryPerformance.map((cat, idx) => {
+                  const colors = [
+                    'bg-orange-500',
+                    'bg-blue-500',
+                    'bg-green-500',
+                    'bg-purple-500',
+                    'bg-pink-500',
+                    'bg-yellow-500'
+                  ];
+                  return (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className={`w-4 h-4 rounded-full ${colors[idx % colors.length]}`}></div>
+                      <span className="text-sm font-bold text-gray-900 flex-1">{cat.category}</span>
+                      <span className="text-sm font-bold text-gray-900">{cat.percentage}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Top Products */}
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="px-6 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white">
+              <h2 className="text-2xl font-bold">⭐ Top Performing Products</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-100 border-b-2 border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left font-bold text-gray-900">Product</th>
+                    <th className="px-6 py-3 text-left font-bold text-gray-900">Category</th>
+                    <th className="px-6 py-3 text-right font-bold text-gray-900">Units Sold</th>
+                    <th className="px-6 py-3 text-right font-bold text-gray-900">Revenue</th>
+                    <th className="px-6 py-3 text-center font-bold text-gray-900">Rating</th>
+                    <th className="px-6 py-3 text-right font-bold text-gray-900">Stock</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {analytics.topProducts.map((product, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-gray-900">{product.productName}</p>
+                        <p className="text-xs text-black font-bold">{product.productId}</p>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-bold text-gray-900">{product.category}</td>
+                      <td className="px-6 py-4 text-right font-bold text-gray-900">{product.unitsSold}</td>
+                      <td className="px-6 py-4 text-right font-bold text-orange-600">
+                        ₦{(product.revenue / 1000000).toFixed(1)}M
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full font-bold text-sm">
+                          ⭐ {product.rating}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <span className={`font-bold ${product.stockLevel > 10 ? 'text-green-600' : product.stockLevel > 0 ? 'text-yellow-600' : 'text-red-600'}`}>
+                          {product.stockLevel}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Insights & Recommendations */}
+          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 className="font-bold text-lg text-gray-900 mb-4">💡 Insights & Recommendations</h3>
+            <ul className="space-y-2 text-sm font-bold text-gray-900">
+              <li>
+                ? <strong>Strong Performance:</strong> Sales have increased by 12.5% compared to the previous period, indicating
+                strong market demand.
+              </li>
+              <li>
+                💡 <strong>Top Category:</strong> Solar Panels (32.9%) is your top revenue generator. Consider increasing inventory for
+                this category.
+              </li>
+              <li>
+                💡 <strong>Low Stock Alert:</strong> Lithium Battery 5KWh has only 5 units. Reorder immediately to avoid stockouts.
+              </li>
+              <li>
+                💡 <strong>Customer Growth:</strong> Your customer base has grown by 8.3%, with a satisfaction rating of 4.6/5. Keep up the
+                quality.
+              </li>
+              <li>
+                💡 <strong>Conversion Strategy:</strong> Conversion rate is 2.4%. Consider running targeted campaigns to increase this to
+                industry average (3.5%).
+              </li>
+            </ul>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    </>
+  );
+}
+
+
+

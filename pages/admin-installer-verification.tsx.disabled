@@ -1,0 +1,301 @@
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
+import Head from 'next/head'
+import Header from '../components/Header'
+import { useAuthStore } from '../store/authStore'
+import { getApiBaseUrl } from '@/lib/apiConfig'
+
+interface Installer {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  country: string
+  city: string
+  certifications: string
+  yearsOfExperience: string
+  serviceAreas: string
+  isVerified: boolean
+  verifiedAt?: string
+  createdAt: string
+}
+
+export default function AdminInstallerVerification() {
+  const router = useRouter()
+  const { user, token, isHydrated } = useAuthStore()
+  const [installers, setInstallers] = useState<Installer[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<'pending' | 'verified'>('pending')
+  const [selectedInstaller, setSelectedInstaller] = useState<Installer | null>(null)
+  const [notes, setNotes] = useState('')
+  const [processing, setProcessing] = useState(false)
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return
+    }
+
+    if (!user || !token) {
+      router.push('/login')
+      return
+    }
+    if (user.role !== 'admin') {
+      router.push('/')
+      return
+    }
+    fetchInstallers()
+  }, [isHydrated, filter, user, token, router])
+
+  const fetchInstallers = async () => {
+    setLoading(true)
+    try {
+      const apiBase = getApiBaseUrl()
+      const endpoint = filter === 'pending' 
+        ? `${apiBase}/admin/installers/pending`
+        : `${apiBase}/admin/installers`
+      
+      const response = await fetch(endpoint, {
+        headers: { 'Authorization': `Bearer ${token!}` }
+      })
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      setInstallers(data || [])
+    } catch (error: any) {
+      console.error('Failed to fetch installers:', error)
+      alert('Failed to load installers: ' + error.message)
+      setInstallers([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredInstallers = installers.filter(installer => {
+    if (filter === 'pending') return !installer.isVerified
+    if (filter === 'verified') return installer.isVerified
+    return true
+  })
+
+  const handleVerify = async (installerId: string, isVerified: boolean) => {
+    if (!confirm(`Are you sure you want to ${isVerified ? 'verify' : 'reject'} this installer?`)) return
+
+    setProcessing(true)
+    try {
+      const baseUrl = getApiBaseUrl()
+      const url = `${baseUrl}/admin/installers/${installerId}/verify`
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token!}`
+        },
+        body: JSON.stringify({ isVerified, notes })
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        alert(`Installer ${isVerified ? 'verified' : 'rejected'} successfully!`)
+        setSelectedInstaller(null)
+        setNotes('')
+        fetchInstallers()
+      } else {
+        throw new Error(data.message)
+      }
+    } catch (error: any) {
+      alert('Failed to update installer: ' + error.message)
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Head>
+        <title>Installer Verification - Admin</title>
+      </Head>
+      <Header />
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Installer Verification</h1>
+          <button
+            onClick={() => router.push('/admin-dashboard')}
+            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="flex gap-2 mb-6">
+          {(['pending', 'verified'] as const).map(status => (
+            <button
+              key={status}
+              onClick={() => setFilter(status)}
+              className={`px-4 py-2 rounded-lg font-semibold ${
+                filter === status
+                  ? 'bg-teal-600 text-white'
+                  : 'bg-white text-gray-700 font-bold hover:bg-gray-100'
+              }`}
+            >
+              {status === 'pending' ? 'Pending Approval' : 'Verified'}
+              {status === 'pending' && installers.filter(i => !i.isVerified).length > 0 && (
+                <span className="ml-2 bg-red-500 text-white px-2 py-0.5 rounded-full text-xs">
+                  {installers.filter(i => !i.isVerified).length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <div className="text-center py-12 text-gray-800 dark:text-gray-200 font-semibold">Loading...</div>
+        ) : filteredInstallers.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-md p-12 text-center">
+            <div className="text-6xl mb-4">🔧</div>
+            <h2 className="text-2xl font-bold mb-2 text-gray-900">No Installers</h2>
+            <p className="text-gray-700 font-semibold">No {filter} installers found</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredInstallers.map(installer => (
+              <div key={installer.id} className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      {installer.firstName} {installer.lastName}
+                    </h3>
+                    <p className="text-sm text-gray-700 font-semibold">{installer.email}</p>
+                    <p className="text-sm text-gray-700 font-semibold">{installer.phone}</p>
+                  </div>
+                  {installer.isVerified && (
+                    <span className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full font-semibold">
+                      ✓ Verified
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                  <div>
+                    <label className="text-gray-700 font-semibold">Certifications</label>
+                    <p className="text-gray-800 font-semibold">{installer.certifications || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-gray-700 font-semibold">Experience</label>
+                    <p className="text-gray-800 font-semibold">{installer.yearsOfExperience} years</p>
+                  </div>
+                  <div>
+                    <label className="text-gray-700 font-semibold">Location</label>
+                    <p className="text-gray-800 font-semibold">{installer.city}, {installer.country}</p>
+                  </div>
+                  <div>
+                    <label className="text-gray-700 font-semibold">Service Areas</label>
+                    <p className="text-gray-800 font-semibold">{installer.serviceAreas}</p>
+                  </div>
+                  <div>
+                    <label className="text-gray-700 font-semibold">Registered</label>
+                    <p className="text-gray-800 font-semibold">{new Date(installer.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+
+                {!installer.isVerified && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelectedInstaller(installer)}
+                      className="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-teal-700 transition text-sm"
+                    >
+                      Review
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Review Modal */}
+      {selectedInstaller && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedInstaller(null)}
+        >
+          <div
+            className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">Review Installer</h2>
+              <button
+                onClick={() => setSelectedInstaller(null)}
+                className="text-3xl hover:text-gray-800 dark:hover:text-gray-200 font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <h3 className="font-bold text-lg text-gray-900 mb-1">{selectedInstaller.firstName} {selectedInstaller.lastName}</h3>
+              <p className="text-gray-700 font-semibold">{selectedInstaller.email}</p>
+              <p className="text-gray-700 font-semibold">{selectedInstaller.phone}</p>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded mb-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <label className="text-gray-700 font-bold">Certifications</label>
+                  <p className="text-gray-800 font-semibold">{selectedInstaller.certifications || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="text-gray-700 font-bold">Experience</label>
+                  <p className="text-gray-800 font-semibold">{selectedInstaller.yearsOfExperience} years</p>
+                </div>
+                <div>
+                  <label className="text-gray-700 font-bold">Service Areas</label>
+                  <p className="text-gray-800 font-semibold">{selectedInstaller.serviceAreas}</p>
+                </div>
+                <div>
+                  <label className="text-gray-700 font-bold">Location</label>
+                  <p className="text-gray-800 font-semibold">{selectedInstaller.city}, {selectedInstaller.country}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-semibold mb-2 text-gray-900">Verification Notes (Optional)</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:border-teal-600"
+                rows={3}
+                placeholder="Add notes about this installer..."
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleVerify(selectedInstaller.id, true)}
+                disabled={processing}
+                className="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 disabled:bg-gray-400"
+              >
+                {processing ? 'Processing...' : 'Approve & Verify'}
+              </button>
+              <button
+                onClick={() => handleVerify(selectedInstaller.id, false)}
+                disabled={processing}
+                className="flex-1 bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 disabled:bg-gray-400"
+              >
+                {processing ? 'Processing...' : 'Reject'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

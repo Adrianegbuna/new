@@ -1,0 +1,303 @@
+﻿import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { apiClient } from '@/lib/api-client';
+import Head from 'next/head';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { useAuthStore } from '../store/authStore';
+import { ProtectAdminPage } from '../components/ProtectAdminPage';
+
+interface Referral {
+  id: string;
+  referrerName: string;
+  referrerEmail: string;
+  referralCode: string;
+  status: string;
+  totalReferred: number;
+  successfulPurchases: number;
+  totalCommission: number;
+  createdAt: string;
+}
+
+interface ReferralStats {
+  totalReferrals: number;
+  activeReferrals: number;
+  totalClicks: number;
+  totalOrders: number;
+  approvedOrders: number;
+  totalCommission: number;
+}
+
+export default function AdminReferralsPage() {
+  const router = useRouter();
+  const { token: storeToken, user: storeUser, isHydrated } = useAuthStore();
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [stats, setStats] = useState<ReferralStats | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [sortBy, setSortBy] = useState<'createdAt' | 'totalCommission'>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Check Zustand store after hydration
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    const checkAuth = () => {
+      if (storeToken && storeUser?.role === 'admin') {
+        setAuthToken(storeToken);
+        setAuthChecked(true);
+        return;
+      }
+      
+      // Redirect if no auth found
+      setAuthChecked(true);
+      router.replace('/login');
+    };
+
+    checkAuth();
+  }, [isHydrated, storeToken, storeUser, router]);
+
+  useEffect(() => {
+    if (authToken && authChecked) {
+      fetchData();
+    }
+  }, [authToken, authChecked, currentPage, pageSize, sortBy, sortOrder]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [referralsRes, statsRes] = await Promise.all([
+        apiClient.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/referrals/admin/all?page=${currentPage}&limit=${pageSize}&sortBy=${sortBy}&sortOrder=${sortOrder}`
+        ),
+        apiClient.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/referrals/admin/stats`
+        )
+      ]);
+
+      setReferrals(referralsRes.data.data?.data || []);
+      setTotalPages(referralsRes.data.data?.pages || 1);
+      setStats(statsRes.data.data);
+    } catch (error) {
+      console.error('Failed to fetch referral data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ProtectAdminPage requiredRole="admin">
+      <Head>
+        <title>Referral Management - RenewableZmart Admin</title>
+      </Head>
+
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        <Header />
+
+        <main className="flex-1 container mx-auto px-4 py-8">
+          {/* Page Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-black mb-2">🎯 Referral Management</h1>
+            <p className="text-black font-bold">Monitor and manage user referral programs</p>
+          </div>
+
+          {successMessage && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+              {successMessage}
+            </div>
+          )}
+
+          {/* Statistics Cards */}
+          {stats && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <p className="text-sm text-black font-bold mb-2">Total Referrals</p>
+                <p className="text-3xl font-bold text-blue-600">{stats.totalReferrals}</p>
+              </div>
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <p className="text-sm text-black font-bold mb-2">Active Referrals</p>
+                <p className="text-3xl font-bold text-green-600">{stats.activeReferrals}</p>
+              </div>
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <p className="text-sm text-black font-bold mb-2">Total Clicks</p>
+                <p className="text-3xl font-bold text-purple-600">{stats.totalClicks}</p>
+              </div>
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <p className="text-sm text-black font-bold mb-2">Total Orders</p>
+                <p className="text-3xl font-bold text-orange-600">{stats.totalOrders}</p>
+              </div>
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <p className="text-sm text-black font-bold mb-2">Approved Orders</p>
+                <p className="text-3xl font-bold text-emerald-600">{stats.approvedOrders}</p>
+              </div>
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <p className="text-sm text-black font-bold mb-2">Total Commission</p>
+                <p className="text-2xl font-bold text-indigo-600">?{stats.totalCommission.toLocaleString()}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Filters and Controls */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-black font-bold mb-2">Sort By</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => {
+                    setSortBy(e.target.value as any);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-black dark:text-white font-semibold"
+                >
+                  <option value="createdAt">Date Created</option>
+                  <option value="totalCommission">Total Commission</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black font-bold mb-2">Order</label>
+                <select
+                  value={sortOrder}
+                  onChange={(e) => {
+                    setSortOrder(e.target.value as any);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-black dark:text-white font-semibold"
+                >
+                  <option value="DESC">Newest First</option>
+                  <option value="ASC">Oldest First</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black font-bold mb-2">Page Size</label>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(parseInt(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-black dark:text-white font-semibold"
+                >
+                  <option value={10}>10 per page</option>
+                  <option value={20}>20 per page</option>
+                  <option value={50}>50 per page</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Referrals Table */}
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            {loading ? (
+              <div className="p-8 text-center">
+                <p className="text-black font-bold">Loading referral data...</p>
+              </div>
+            ) : referrals.length === 0 ? (
+              <div className="p-8 text-center">
+                <p className="text-black font-bold text-lg">No referral programs found</p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        <th className="text-left py-3 px-6 font-semibold text-black font-bold">Referrer</th>
+                        <th className="text-left py-3 px-6 font-semibold text-black font-bold">Email</th>
+                        <th className="text-left py-3 px-6 font-semibold text-black font-bold">Code</th>
+                        <th className="text-center py-3 px-6 font-semibold text-black font-bold">Status</th>
+                        <th className="text-center py-3 px-6 font-semibold text-black font-bold">Referred</th>
+                        <th className="text-center py-3 px-6 font-semibold text-black font-bold">Purchases</th>
+                        <th className="text-right py-3 px-6 font-semibold text-black font-bold">Commission</th>
+                        <th className="text-left py-3 px-6 font-semibold text-black font-bold">Created</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {referrals.map((referral) => (
+                        <tr key={referral.id} className="hover:bg-gray-50 transition">
+                          <td className="py-4 px-6">
+                            <p className="font-medium text-gray-900">{referral.referrerName}</p>
+                          </td>
+                          <td className="py-4 px-6">
+                            <p className="text-sm text-black font-bold">{referral.referrerEmail}</p>
+                          </td>
+                          <td className="py-4 px-6">
+                            <code className="bg-gray-100 px-3 py-1 rounded text-sm font-mono">
+                              {referral.referralCode}
+                            </code>
+                          </td>
+                          <td className="py-4 px-6 text-center">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                referral.status === 'active'
+                                  ? 'bg-green-100 text-green-800'
+                                  : referral.status === 'inactive'
+                                  ? 'bg-red-100 text-red-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}
+                            >
+                              {referral.status}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6 text-center">
+                            <p className="font-semibold text-gray-900">{referral.totalReferred}</p>
+                          </td>
+                          <td className="py-4 px-6 text-center">
+                            <p className="font-semibold text-green-600">{referral.successfulPurchases}</p>
+                          </td>
+                          <td className="py-4 px-6 text-right">
+                            <p className="font-semibold text-indigo-600">
+                              ?{referral.totalCommission.toLocaleString()}
+                            </p>
+                          </td>
+                          <td className="py-4 px-6 text-sm text-black font-bold">
+                            {new Date(referral.createdAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                <div className="border-t bg-gray-50 px-6 py-4 flex items-center justify-between">
+                  <p className="text-sm text-black font-bold">
+                    Page {currentPage} of {totalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 border border-gray-400 rounded-lg text-sm font-medium text-black font-bold hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                      className="px-4 py-2 border border-gray-400 rounded-lg text-sm font-medium text-black font-bold hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    </ProtectAdminPage>
+  );
+}
+
+
+

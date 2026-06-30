@@ -1,0 +1,460 @@
+﻿import Head from 'next/head'
+import { useState, useEffect } from 'react'
+import Header from '../components/Header'
+import { useRouter } from 'next/router'
+import Link from 'next/link'
+import { africanCountries } from '../data/locations'
+import { getApiBaseUrl } from '@/lib/apiConfig'
+import { useAuthStore } from '@/store/authStore'
+import S3ImageUploader from '../components/S3ImageUploader'
+
+interface Store {
+  id: string
+  name: string
+  slug: string
+  country: string
+  city: string
+  ownerId: string
+}
+
+interface Category {
+  id: string
+  name: string
+  subcategories?: SubCategory[]
+}
+
+interface SubCategory {
+  id: string
+  name: string
+}
+
+type FormData = {
+  name: string
+  description: string
+  price: string
+  image: string
+  category: string
+  subcategory: string
+  stock: string
+  storeId: string
+  city: string
+  countries: string[]
+}
+
+export default function AdminPostProduct() {
+  const router = useRouter()
+  const { user, token, isHydrated } = useAuthStore()
+  const [stores, setStores] = useState<Store[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [subcategories, setSubcategories] = useState<SubCategory[]>([])
+  const [loading, setLoading] = useState(false)
+  const [imageUrls, setImageUrls] = useState<string[]>([])
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    description: '',
+    price: '',
+    image: '',
+    category: '',
+    subcategory: '',
+    stock: '',
+    storeId: '',
+    city: '',
+    countries: [],
+  })
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return
+    }
+
+    if (!user || !token) {
+      router.push('/login')
+      return
+    }
+    
+    if (user.role !== 'admin') {
+      router.push('/')
+      return
+    }
+
+    fetchStores()
+    fetchCategories()
+  }, [isHydrated, user, token, router])
+
+  const fetchCategories = async () => {
+    try {
+      const apiBase = getApiBaseUrl()
+      const response = await fetch(`${apiBase}/categories`)
+      if (response.ok) {
+        const data = await response.json()
+        setCategories(data)
+        if (data.length > 0) {
+          setFormData(prev => ({ ...prev, category: data[0].id }))
+          setSubcategories(data[0].subcategories || [])
+          if (data[0].subcategories?.length > 0) {
+            setFormData(prev => ({ ...prev, subcategory: data[0].subcategories[0].id }))
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+    }
+  }
+
+  const fetchStores = async () => {
+    try {
+      const apiBase = getApiBaseUrl()
+      const response = await fetch(`${apiBase}/admin/stores`, {
+        headers: { 'Authorization': `Bearer ${token!}` }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setStores(data)
+      }
+    } catch (error) {
+      // Error fetching stores handled silently
+    }
+  }
+
+  const handleCategoryChange = (categoryId: string) => {
+    setFormData({ ...formData, category: categoryId, subcategory: '' })
+    const selected = categories.find(c => c.id === categoryId)
+    setSubcategories(selected?.subcategories || [])
+    if (selected?.subcategories && selected.subcategories.length > 0) {
+      setFormData(prev => ({ ...prev, subcategory: selected.subcategories![0].id }))
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (imageUrls.length === 0) {
+      alert('Please upload at least one product image')
+      return
+    }
+
+    // Validate required fields
+    if (!formData.name.trim()) {
+      alert('Please enter product name')
+      return
+    }
+    if (!formData.description.trim()) {
+      alert('Please enter product description')
+      return
+    }
+    if (!formData.price) {
+      alert('Please enter product price')
+      return
+    }
+    if (!formData.stock) {
+      alert('Please enter stock quantity')
+      return
+    }
+    if (!formData.category) {
+      alert('Please select a category')
+      return
+    }
+    if (!formData.storeId) {
+      alert('Please link to a vendor store')
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const apiBase = getApiBaseUrl()
+      const payload = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        image: imageUrls[0],
+        category: formData.category,
+        subcategory: formData.subcategory || null,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+        storeId: formData.storeId,
+        city: formData.city || '',
+        countries: formData.countries.length > 0 ? formData.countries : undefined
+      }
+
+      console.log('[ADMIN PRODUCT] Submitting payload:', payload)
+
+      const response = await fetch(`${apiBase}/admin/products/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token!}`
+        },
+        body: JSON.stringify(payload)
+      })
+
+      const responseData = await response.json()
+      console.log('[ADMIN PRODUCT] Response:', responseData)
+
+      if (response.ok) {
+        alert('Product posted successfully!')
+        setFormData({
+          name: '',
+          description: '',
+          price: '',
+          image: '',
+          category: '',
+          subcategory: '',
+          stock: '',
+          storeId: '',
+          city: '',
+          countries: []
+        })
+        setImageUrls([])
+      } else {
+        const errorMsg = responseData.message || responseData.error || 'Unknown error'
+        console.error('[ADMIN PRODUCT] Error:', errorMsg)
+        alert(`Failed to post product: ${errorMsg}`)
+      }
+    } catch (error: any) {
+      console.error('[ADMIN PRODUCT] Catch error:', error)
+      alert(`Error posting product: ${error.message || 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCountryToggle = (country: string) => {
+    setFormData(prev => ({
+      ...prev,
+      countries: prev.countries.includes(country)
+        ? prev.countries.filter(c => c !== country)
+        : [...prev.countries, country]
+    }))
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Head>
+        <title>Post Product - Admin Dashboard</title>
+      </Head>
+
+      <Header />
+
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <div className="mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Post Product as Admin</h1>
+              <p className="text-sm sm:text-base text-black font-bold">Add products to verified authorized dealer stores</p>
+            </div>
+            <Link href="/admin-dashboard" className="bg-gray-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-gray-700 transition text-sm sm:text-base">
+              ← Back to Dashboard
+            </Link>
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto">
+          <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-4 sm:p-6 space-y-4 sm:space-y-6">
+            {/* Product Name */}
+            <div>
+              <label className="block font-extrabold mb-2 text-sm sm:text-base text-gray-900">Product Name *</label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:border-teal-600 text-sm sm:text-base font-semibold text-black dark:text-white bg-white dark:bg-gray-800 border-black dark:border-gray-600"
+                required
+                placeholder="e.g., 300W Monocrystalline Solar Panel"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block font-extrabold mb-2 text-sm sm:text-base text-gray-900">Description *</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:border-teal-600 text-sm sm:text-base font-semibold text-black dark:text-white bg-white dark:bg-gray-800 border-black dark:border-gray-600"
+                rows={4}
+                required
+                placeholder="Detailed product description..."
+              />
+            </div>
+
+            {/* Price and Stock */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-extrabold mb-2 text-sm sm:text-base text-gray-900">Price *</label>
+                <input
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:border-teal-600 text-sm sm:text-base font-semibold text-black dark:text-white bg-white dark:bg-gray-800 border-black dark:border-gray-600"
+                  required
+                  min="0"
+                  step="0.01"
+                  placeholder="150000"
+                />
+              </div>
+
+              <div>
+                <label className="block font-extrabold mb-2 text-sm sm:text-base text-gray-900">Stock Quantity *</label>
+                <input
+                  type="number"
+                  value={formData.stock}
+                  onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:border-teal-600 text-sm sm:text-base font-semibold text-black dark:text-white bg-white dark:bg-gray-800 border-black dark:border-gray-600"
+                  required
+                  min="0"
+                  placeholder="50"
+                />
+              </div>
+            </div>
+
+            {/* Category and Subcategory */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-extrabold mb-2 text-sm sm:text-base text-gray-900">Category *</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:border-teal-600 text-sm sm:text-base font-semibold bg-white dark:bg-gray-800 text-black dark:text-white"
+                  required
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-extrabold mb-2 text-sm sm:text-base text-gray-900">Sub-category</label>
+                <select
+                  value={formData.subcategory}
+                  onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:border-teal-600 text-sm sm:text-base font-semibold bg-white dark:bg-gray-800 text-black dark:text-white"
+                  disabled={subcategories.length === 0}
+                >
+                  <option value="">Select a subcategory (optional)</option>
+                  {subcategories.map((subcat) => (
+                    <option key={subcat.id} value={subcat.id}>
+                      {subcat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Product Image Upload */}
+            <div>
+              <label className="block font-extrabold mb-2 text-sm sm:text-base text-gray-900">Product Image *</label>
+              <div className="bg-blue-100 border-2 border-blue-500 rounded-lg p-4 mb-4">
+                <p className="text-sm sm:text-base text-blue-900 font-extrabold mb-2">📸 Upload Image:</p>
+                <ul className="text-sm sm:text-base text-blue-900 font-bold space-y-1 ml-4 list-disc">
+                  <li>Format: JPG, PNG, WebP</li>
+                  <li>Recommended: 800x800 pixels (1:1 ratio)</li>
+                  <li>Max file size: 20MB (auto-compressed)</li>
+                </ul>
+              </div>
+              <S3ImageUploader
+                folder="products"
+                maxImages={1}
+                onUploadComplete={(urls) => {
+                  setImageUrls(urls)
+                  console.log('[ADMIN PRODUCT] Images uploaded to S3:', urls)
+                }}
+                onError={(error) => {
+                  console.error('[ADMIN PRODUCT] Upload error:', error)
+                  alert(`Upload failed: ${error.message}`)
+                }}
+              />
+              {imageUrls.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm sm:text-base text-green-700 font-extrabold mb-3">✓ Image ready for upload</p>
+                  <img 
+                    src={imageUrls[0]} 
+                    alt="Preview" 
+                    className="w-48 h-48 sm:w-56 sm:h-56 object-contain bg-white border-3 border-green-500 rounded-lg p-3 shadow-md" 
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Store Selection */}
+            <div>
+              <label className="block font-extrabold mb-2 text-sm sm:text-base text-gray-900">Link to Vendor Store *</label>
+              <select
+                value={formData.storeId}
+                onChange={(e) => setFormData({ ...formData, storeId: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:border-teal-600 text-sm sm:text-base font-semibold text-black dark:text-white bg-white dark:bg-gray-800 border-black dark:border-gray-600"
+                required
+              >
+                <option value="">Select a store...</option>
+                {stores.map(store => (
+                  <option key={store.id} value={store.id}>
+                    {store.name} - {store.city}, {store.country}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs sm:text-sm text-black font-extrabold mt-1">All registered vendor stores available</p>
+            </div>
+
+            {/* City */}
+            <div>
+              <label className="block font-extrabold mb-2 text-sm sm:text-base text-gray-900">City</label>
+              <input
+                type="text"
+                value={formData.city}
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:border-teal-600 text-sm sm:text-base font-semibold text-black dark:text-white bg-white dark:bg-gray-800 border-black dark:border-gray-600"
+                placeholder="Lagos"
+              />
+            </div>
+
+            {/* Available Countries */}
+            <div>
+              <label className="block font-extrabold mb-3 text-sm sm:text-base text-gray-900">Available in Countries</label>
+              <p className="text-xs sm:text-sm text-black font-extrabold mb-3">Select all countries where this product will be displayed</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                {africanCountries.map((country: any) => (
+                  <label key={country.name} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-2 rounded font-semibold text-gray-900">
+                    <input
+                      type="checkbox"
+                      checked={formData.countries.includes(country.name)}
+                      onChange={() => handleCountryToggle(country.name)}
+                      className="w-4 h-4 text-teal-600 rounded focus:ring-teal-500"
+                    />
+                    <span className="truncate font-semibold text-gray-900">{country.name}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs sm:text-sm text-black font-semibold mt-2">
+                {formData.countries.length} countries selected
+                {formData.countries.length === 0 && ' (will default to store\'s country)'}
+              </p>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex gap-3 pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-700 transition disabled:opacity-50 text-sm sm:text-base"
+              >
+                {loading ? 'Posting Product...' : 'Post Product'}
+              </button>
+              <Link
+                href="/admin-dashboard"
+                className="px-6 py-3 bg-gray-200 text-black font-bold rounded-lg font-semibold hover:bg-gray-300 transition text-sm sm:text-base text-center"
+              >
+                Cancel
+              </Link>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
+

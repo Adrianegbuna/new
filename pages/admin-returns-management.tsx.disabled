@@ -1,0 +1,315 @@
+﻿import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { apiClient } from '@/lib/api-client';
+import Head from 'next/head';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { useAuthStore } from '../store/authStore';
+
+interface ReturnRequest {
+  id: string;
+  orderId: string;
+  userId: string;
+  rmaNumber: string;
+  reason: string;
+  status: string;
+  refundAmount: number;
+  requestedAt: string;
+  approvedAt: string;
+  adminNotes: string;
+}
+
+export default function AdminReturnsManagement() {
+  const router = useRouter();
+  const { token, user, isHydrated } = useAuthStore();
+  const [returns, setReturns] = useState<ReturnRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedReturn, setSelectedReturn] = useState<ReturnRequest | null>(null);
+  const [showApprovalForm, setShowApprovalForm] = useState(false);
+  const [formData, setFormData] = useState({
+    refundAmount: 0,
+    shippingLabel: '',
+    notes: ''
+  });
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    if (!user?.role || user.role !== 'admin') {
+      router.replace('/login');
+      return;
+    }
+    fetchReturns();
+  }, [isHydrated, user, token, router]);
+
+  const fetchReturns = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/returns`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setReturns(response.data.data || []);
+    } catch (error) {
+      console.error('Failed to fetch returns:', error);
+      setMessage('Failed to load returns');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedReturn) return;
+
+    try {
+      await apiClient.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/returns/${selectedReturn.id}/approve`,
+        formData
+      );
+      setMessage('Return approved successfully!');
+      setShowApprovalForm(false);
+      setSelectedReturn(null);
+      setFormData({ refundAmount: 0, shippingLabel: '', notes: '' });
+      fetchReturns();
+      setTimeout(() => setMessage(''), 5000);
+    } catch (error: any) {
+      setMessage(`❌ ${error.response?.data?.error || 'Failed to approve return'}`);
+    }
+  };
+
+  const handleReject = async (returnId: string) => {
+    const reason = window.prompt('Enter reason for rejection:');
+    if (!reason) return;
+
+    try {
+      await apiClient.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/returns/${returnId}/reject`,
+        { reason }
+      );
+      setMessage('Return rejected');
+      fetchReturns();
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error: any) {
+      setMessage(`❌ ${error.response?.data?.error || 'Failed to reject return'}`);
+    }
+  };
+
+  const handleProcessRefund = async (returnId: string) => {
+    if (!window.confirm('Process refund for this return?')) return;
+
+    try {
+      await apiClient.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/returns/${returnId}/process-refund`,
+        {}
+      );
+      setMessage('Refund processed successfully');
+      fetchReturns();
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error: any) {
+      setMessage(`❌ ${error.response?.data?.error || 'Failed to process refund'}`);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'requested': return 'bg-yellow-100 text-yellow-800';
+      case 'approved': return 'bg-blue-100 text-blue-800';
+      case 'shipped': return 'bg-purple-100 text-purple-800';
+      case 'received': return 'bg-indigo-100 text-indigo-800';
+      case 'refunded': return 'bg-green-100 text-green-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-900 font-bold';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-black font-bold">Loading returns...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Head>
+        <title>Returns Management - Admin</title>
+      </Head>
+
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-1 container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-gray-900">↩️ Returns Management</h1>
+            <p className="text-black font-bold">Review and process customer return requests</p>
+          </div>
+
+          {message && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-700">
+              {message}
+            </div>
+          )}
+
+          {/* Approval Form */}
+          {showApprovalForm && selectedReturn && (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Approve Return - {selectedReturn.rmaNumber}</h2>
+
+              <form onSubmit={handleApprove} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-black font-bold mb-2">
+                    Refund Amount (?) *
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.refundAmount}
+                    onChange={(e) => setFormData({ ...formData, refundAmount: parseFloat(e.target.value) })}
+                    className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-black font-bold mb-2">
+                    Return Shipping Label URL
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.shippingLabel}
+                    onChange={(e) => setFormData({ ...formData, shippingLabel: e.target.value })}
+                    placeholder="https://..."
+                    className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-black font-bold mb-2">
+                    Admin Notes
+                  </label>
+                  <textarea
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    rows={4}
+                    className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-black dark:text-white font-semibold"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-green-500 text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition"
+                  >
+                    Approve Return
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowApprovalForm(false)}
+                    className="flex-1 bg-gray-300 text-gray-900 py-2 rounded-lg font-semibold hover:bg-gray-400 transition"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* Returns List */}
+          <div className="space-y-4">
+            {returns.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-md p-12 text-center">
+                <p className="text-black font-bold">No pending returns</p>
+              </div>
+            ) : (
+              returns.map((returnItem) => (
+                <div key={returnItem.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-lg font-bold">{returnItem.rmaNumber}</h3>
+                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(returnItem.status)}`}>
+                          {returnItem.status}
+                        </span>
+                      </div>
+                      <p className="text-sm text-black font-bold">Order ID: {returnItem.orderId}</p>
+                    </div>
+                    {returnItem.status === 'requested' && (
+                      <button
+                        onClick={() => {
+                          setSelectedReturn(returnItem);
+                          setShowApprovalForm(true);
+                        }}
+                        className="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition"
+                      >
+                        Review
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                    <p className="text-sm mb-2"><strong>Reason:</strong> {returnItem.reason}</p>
+                    {returnItem.adminNotes && (
+                      <p className="text-sm"><strong>Notes:</strong> {returnItem.adminNotes}</p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
+                    <div>
+                      <p className="text-black font-bold">Requested</p>
+                      <p className="font-semibold">{new Date(returnItem.requestedAt).toLocaleDateString()}</p>
+                    </div>
+                    {returnItem.refundAmount > 0 && (
+                      <div>
+                        <p className="text-black font-bold">Refund</p>
+                        <p className="font-semibold text-green-600">?{returnItem.refundAmount.toLocaleString()}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {returnItem.status === 'requested' && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedReturn(returnItem);
+                          setShowApprovalForm(true);
+                        }}
+                        className="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleReject(returnItem.id)}
+                        className="flex-1 bg-red-500 text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )}
+
+                  {returnItem.status === 'approved' && (
+                    <button
+                      onClick={() => handleProcessRefund(returnItem.id)}
+                      className="w-full bg-green-500 text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition"
+                    >
+                      Process Refund
+                    </button>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </main>
+        <Footer />
+      </div>
+    </>
+  );
+}
+
+
+

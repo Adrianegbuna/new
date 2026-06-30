@@ -1,0 +1,725 @@
+import { useState, useEffect } from 'react'
+import Head from 'next/head'
+import Header from '../components/Header'
+import apiClient from '@/lib/api-client'
+import { useAuthStore } from '@/store/authStore'
+import { useRouter } from 'next/router'
+
+interface ResaleProduct {
+  id: string
+  productName: string
+  description: string
+  productCondition: string
+  price: number
+  inspectionFee: number
+  status: string
+  createdAt: string
+  deliveryOption?: string
+  location?: string
+  user: {
+    id: string
+    email: string
+    firstName: string
+    lastName?: string
+    phone?: string
+    city?: string
+    country?: string
+    accountType?: string
+  }
+  originalOrder?: {
+    id: string
+    createdAt: string
+    total: number
+    paymentStatus: string
+  }
+}
+
+interface TradeIn {
+  id: string
+  productName: string
+  interestedInProduct: string
+  productCondition: string
+  estimatedPrice: number
+  quotedPrice?: number
+  status: string
+  createdAt: string
+  deliveryOption?: string
+  location?: string
+  user: {
+    id: string
+    email: string
+    firstName: string
+    lastName?: string
+    phone?: string
+    city?: string
+    country?: string
+    accountType?: string
+  }
+  originalOrder?: {
+    id: string
+    createdAt: string
+    total: number
+    paymentStatus: string
+  }
+}
+
+export default function AdminSwapResellManagement() {
+  const router = useRouter()
+  const { user } = useAuthStore()
+  const [activeTab, setActiveTab] = useState<'resales' | 'tradein'>('resales')
+  const [resales, setResales] = useState<ResaleProduct[]>([])
+  const [tradeIns, setTradeIns] = useState<TradeIn[]>([])
+  const [loading, setLoading] = useState(false)
+  const [selectedStatus, setSelectedStatus] = useState('approved')
+  const [selectedItem, setSelectedItem] = useState<any>(null)
+  const [actionLoading, setActionLoading] = useState(false)
+  const [reason, setReason] = useState('')
+  const [quotedPrice, setQuotedPrice] = useState('')
+
+  useEffect(() => {
+    if (!user || user.role !== 'admin') {
+      router.push('/login')
+      return
+    }
+    
+    // Fetch the appropriate data based on active tab
+    if (activeTab === 'resales') {
+      fetchResales()
+    } else {
+      fetchTradeIns()
+    }
+  }, [user, selectedStatus, activeTab])
+
+  const fetchResales = async () => {
+    setLoading(true)
+    try {
+      const response = await apiClient.get(`/resales?status=${selectedStatus}`)
+      setResales(response.data.data || response.data)
+    } catch (error) {
+      console.error('Failed to fetch resales:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchTradeIns = async () => {
+    setLoading(true)
+    try {
+      const response = await apiClient.get(`/trade-ins?status=${selectedStatus}`)
+      setTradeIns(response.data.data || response.data)
+    } catch (error) {
+      console.error('Failed to fetch trade-ins:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleApproveResale = async (id: string) => {
+    setActionLoading(true)
+    try {
+      await apiClient.post(`/resales/${id}/approve`)
+      setSelectedItem(null)
+      fetchResales()
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to approve resale')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleRejectResale = async (id: string) => {
+    if (!reason.trim()) {
+      alert('Please provide a reason for rejection')
+      return
+    }
+    setActionLoading(true)
+    try {
+      await apiClient.post(`/resales/${id}/reject`, { reason })
+      setSelectedItem(null)
+      setReason('')
+      fetchResales()
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to reject resale')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleApproveTradeIn = async (id: string) => {
+    setActionLoading(true)
+    try {
+      await apiClient.post(`/trade-ins/${id}/approve`)
+      setSelectedItem(null)
+      fetchTradeIns()
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to approve trade-in')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleQuoteTradeIn = async (id: string) => {
+    if (!quotedPrice || parseFloat(quotedPrice) <= 0) {
+      alert('Please enter a valid quoted price')
+      return
+    }
+    setActionLoading(true)
+    try {
+      await apiClient.post(`/trade-ins/${id}/quote`, { quotedPrice: parseFloat(quotedPrice) })
+      setSelectedItem(null)
+      setQuotedPrice('')
+      fetchTradeIns()
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to send quote')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleRejectTradeIn = async (id: string) => {
+    if (!reason.trim()) {
+      alert('Please provide a reason for rejection')
+      return
+    }
+    setActionLoading(true)
+    try {
+      await apiClient.post(`/trade-ins/${id}/reject`, { reason })
+      setSelectedItem(null)
+      setReason('')
+      fetchTradeIns()
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to reject trade-in')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  if (!user || user.role !== 'admin') {
+    return null
+  }
+
+  const items = activeTab === 'resales' ? resales : tradeIns
+
+  return (
+    <>
+      <Head>
+        <title>Swap & Resell Management - Admin | RenewableZmart</title>
+      </Head>
+      <Header />
+
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">🔄 Swap & Resell Management</h1>
+            <p className="text-gray-600">Review and approve resale listings and trade-in requests from customers</p>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex gap-4 mb-8 bg-white p-4 rounded-lg shadow-md flex-wrap">
+            <button
+              onClick={() => {
+                setActiveTab('resales')
+                setSelectedStatus('pending')
+                fetchResales()
+              }}
+              className={`px-6 py-2 rounded-lg font-bold transition ${
+                activeTab === 'resales'
+                  ? 'bg-orange-500 text-white shadow-md'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              💰 Resale Listings
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('tradein')
+                setSelectedStatus('pending')
+                fetchTradeIns()
+              }}
+              className={`px-6 py-2 rounded-lg font-bold transition ${
+                activeTab === 'tradein'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              🔄 Trade-In Requests
+            </button>
+          </div>
+
+          {/* Status Filter */}
+          <div className="mb-8 bg-white p-4 rounded-lg shadow-md">
+            <label className="font-bold text-gray-700 mr-4">Filter by Status:</label>
+            <select
+              value={selectedStatus}
+              onChange={(e) => {
+                setSelectedStatus(e.target.value)
+                if (activeTab === 'resales') {
+                  fetchResales()
+                } else {
+                  fetchTradeIns()
+                }
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            >
+              <option value="pending">Pending Review</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+              {activeTab === 'tradein' && <option value="quoted">Quoted</option>}
+            </select>
+          </div>
+
+          {/* Items Grid */}
+          <div className="space-y-4">
+            {loading ? (
+              <div className="text-center py-12 bg-white rounded-lg">
+                <p className="text-gray-600 text-lg">Loading...</p>
+              </div>
+            ) : items.length === 0 ? (
+              <div className="bg-white p-8 rounded-lg shadow-md text-center">
+                <p className="text-gray-600 text-lg">
+                  No {activeTab === 'resales' ? 'resale listings' : 'trade-in requests'} found
+                </p>
+              </div>
+            ) : (
+              items.map((item) => (
+                <div key={item.id} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
+                  <div className="grid md:grid-cols-4 gap-6 mb-4">
+                    {/* Product Info */}
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800 mb-1">
+                        {activeTab === 'resales' ? (item as ResaleProduct).productName : (item as TradeIn).productName}
+                      </h3>
+                      {activeTab === 'tradein' && (
+                        <p className="text-sm text-gray-600 mb-1">
+                          📦 Wants: {(item as TradeIn).interestedInProduct}
+                        </p>
+                      )}
+                      <p className="text-sm text-gray-700 font-medium">{item.user.firstName}</p>
+                      <p className="text-sm text-gray-500">{item.user.email}</p>
+                      <p className="text-xs text-gray-500 mt-1">Condition: {item.productCondition}</p>
+                      
+                      {/* Original Order Info */}
+                      {(item as any).originalOrder && (
+                        <div className="mt-3 p-2 bg-blue-50 border-l-4 border-blue-500 rounded">
+                          <p className="text-xs font-bold text-blue-700">📋 ORIGINAL ORDER</p>
+                          <p className="text-xs text-blue-600">Order ID: {(item as any).originalOrder.id}</p>
+                          <p className="text-xs text-blue-600">Purchased: {new Date((item as any).originalOrder.createdAt).toLocaleDateString()}</p>
+                          <p className="text-xs text-blue-600 font-bold">Original Cost: ₦{(item as any).originalOrder.total?.toLocaleString() || 'N/A'}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Price Info */}
+                    <div>
+                      <p className="text-sm font-bold text-gray-700 mb-1">
+                        {activeTab === 'resales' ? 'Asking Price' : 'Est. Value'}
+                      </p>
+                      <p className="text-2xl font-bold text-gray-800">
+                        ₦{(activeTab === 'resales' ? (item as ResaleProduct).price : (item as TradeIn).estimatedPrice).toLocaleString()}
+                      </p>
+                      {activeTab === 'resales' && (
+                        <p className="text-xs text-gray-600 mt-1">
+                          Fee: ₦{(item as ResaleProduct).inspectionFee?.toLocaleString() || '0'}
+                        </p>
+                      )}
+                      {activeTab === 'tradein' && (item as TradeIn).quotedPrice && (
+                        <p className="text-sm text-green-600 font-bold mt-1">
+                          Quoted: ₦{(item as TradeIn).quotedPrice?.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Status */}
+                    <div className="flex flex-col justify-center">
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full font-bold text-white text-center ${
+                          item.status === 'pending'
+                            ? 'bg-yellow-500'
+                            : item.status === 'approved'
+                            ? 'bg-green-500'
+                            : item.status === 'quoted'
+                            ? 'bg-blue-500'
+                            : 'bg-red-500'
+                        }`}
+                      >
+                        {item.status.toUpperCase()}
+                      </span>
+                      <p className="text-xs text-gray-600 mt-2">
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => setSelectedItem(item)}
+                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold transition"
+                      >
+                        {item.status === 'pending' ? 'Review & Approve' : 'View Details'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Detail Modal */}
+      {selectedItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-8">
+              <h2 className="text-2xl font-bold mb-6 text-gray-800">
+                {activeTab === 'resales' ? 'Resale Listing' : 'Trade-In Request'} Details
+              </h2>
+
+              {activeTab === 'resales' ? (
+                <>
+                  {/* Product Details Section */}
+                  <div className="mb-8 bg-gray-50 p-6 rounded-lg border-l-4 border-green-500">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">📦 Product Details</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm text-gray-600 font-semibold">Product Name</p>
+                        <p className="text-lg font-bold text-gray-900">{(selectedItem as ResaleProduct).productName}</p>
+                      </div>
+                      {(selectedItem as ResaleProduct).description && (
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Description</p>
+                          <p className="text-gray-800 whitespace-pre-wrap">{(selectedItem as ResaleProduct).description}</p>
+                        </div>
+                      )}
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Condition</p>
+                          <p className="font-bold text-gray-900">{(selectedItem as ResaleProduct).productCondition}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Delivery Option</p>
+                          <p className="font-bold text-gray-900">{(selectedItem as ResaleProduct).deliveryOption?.replace('_', ' ') || 'Not specified'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Asking Price</p>
+                          <p className="text-2xl font-bold text-green-600">₦{(selectedItem as ResaleProduct).price.toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Fee</p>
+                          <p className="font-bold text-gray-900">₦{(selectedItem as ResaleProduct).inspectionFee.toLocaleString()}</p>
+                        </div>
+                      </div>
+                      {(selectedItem as ResaleProduct).location && (
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">📍 Location</p>
+                          <p className="font-bold text-gray-900">{(selectedItem as ResaleProduct).location}</p>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm text-gray-600 font-semibold">Status</p>
+                        <span
+                          className={`inline-block px-4 py-2 rounded-full font-bold text-white ${
+                            selectedItem.status === 'pending' ? 'bg-yellow-500' : selectedItem.status === 'approved' ? 'bg-green-500' : 'bg-red-500'
+                          }`}
+                        >
+                          {selectedItem.status.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500 pt-2">Posted: {new Date(selectedItem.createdAt).toLocaleString()}</div>
+                    </div>
+                  </div>
+
+                  {/* Seller Information Section */}
+                  <div className="mb-8 bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">👤 Seller Information</h3>
+                    <div className="space-y-3">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Name</p>
+                          <p className="text-lg font-bold text-gray-900">
+                            {(selectedItem as ResaleProduct).user.firstName} {(selectedItem as ResaleProduct).user.lastName || ''}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Account Type</p>
+                          <p className="text-lg font-bold text-gray-900 capitalize">{(selectedItem as ResaleProduct).user.accountType || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Email</p>
+                          <p className="font-mono text-blue-600 underline cursor-pointer" onClick={() => { window.location.href = `mailto:${(selectedItem as ResaleProduct).user.email}` }}>
+                            {(selectedItem as ResaleProduct).user.email}
+                          </p>
+                        </div>
+                        {(selectedItem as ResaleProduct).user.phone && (
+                          <div>
+                            <p className="text-sm text-gray-600 font-semibold">Phone</p>
+                            <p className="font-bold text-gray-900">{(selectedItem as ResaleProduct).user.phone}</p>
+                          </div>
+                        )}
+                      </div>
+                      {((selectedItem as ResaleProduct).user.city || (selectedItem as ResaleProduct).user.country) && (
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {(selectedItem as ResaleProduct).user.city && (
+                            <div>
+                              <p className="text-sm text-gray-600 font-semibold">City</p>
+                              <p className="font-bold text-gray-900">{(selectedItem as ResaleProduct).user.city}</p>
+                            </div>
+                          )}
+                          {(selectedItem as ResaleProduct).user.country && (
+                            <div>
+                              <p className="text-sm text-gray-600 font-semibold">Country</p>
+                              <p className="font-bold text-gray-900">{(selectedItem as ResaleProduct).user.country}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {(selectedItem as ResaleProduct).user.phone && (
+                        <div className="flex gap-3 pt-4">
+                          <a
+                            href={`https://wa.me/${(selectedItem as ResaleProduct).user.phone!.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-bold transition text-center"
+                          >
+                            💬 WhatsApp Contact
+                          </a>
+                          <a
+                            href={`tel:${(selectedItem as ResaleProduct).user.phone}`}
+                            className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold transition text-center"
+                          >
+                            📞 Call
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {selectedItem.status === 'pending' && (
+                    <div className="space-y-4 border-t pt-6">
+                      <div>
+                        <label className="block font-bold text-gray-700 mb-2">Rejection Reason (if applicable)</label>
+                        <textarea
+                          value={reason}
+                          onChange={(e) => setReason(e.target.value)}
+                          placeholder="Explain why you're rejecting this listing..."
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleApproveResale(selectedItem.id)}
+                          disabled={actionLoading}
+                          className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold disabled:opacity-50"
+                        >
+                          ✓ Approve
+                        </button>
+                        <button
+                          onClick={() => handleRejectResale(selectedItem.id)}
+                          disabled={actionLoading || !reason.trim()}
+                          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold disabled:opacity-50"
+                        >
+                          ✗ Reject
+                        </button>
+                        <button
+                          onClick={() => setSelectedItem(null)}
+                          className="flex-1 px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 font-bold"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Trade-In Details Section */}
+                  <div className="mb-8 bg-gray-50 p-6 rounded-lg border-l-4 border-blue-500">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">🔄 Trade-In Request Details</h3>
+                    <div className="space-y-3">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Product Being Traded</p>
+                          <p className="text-lg font-bold text-gray-900">{(selectedItem as TradeIn).productName}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Interested In</p>
+                          <p className="text-lg font-bold text-gray-900">{(selectedItem as TradeIn).interestedInProduct}</p>
+                        </div>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Condition</p>
+                          <p className="font-bold text-gray-900">{(selectedItem as TradeIn).productCondition}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Delivery Option</p>
+                          <p className="font-bold text-gray-900">{(selectedItem as TradeIn).deliveryOption?.replace('_', ' ') || 'Not specified'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Estimated Value</p>
+                          <p className="text-2xl font-bold text-green-600">₦{(selectedItem as TradeIn).estimatedPrice.toLocaleString()}</p>
+                        </div>
+                        {(selectedItem as TradeIn).quotedPrice && (
+                          <div>
+                            <p className="text-sm text-gray-600 font-semibold">Quoted Price</p>
+                            <p className="text-2xl font-bold text-blue-600">₦{(selectedItem as TradeIn).quotedPrice?.toLocaleString()}</p>
+                          </div>
+                        )}
+                      </div>
+                      {(selectedItem as TradeIn).location && (
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">📍 Location</p>
+                          <p className="font-bold text-gray-900">{(selectedItem as TradeIn).location}</p>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm text-gray-600 font-semibold">Status</p>
+                        <span
+                          className={`inline-block px-4 py-2 rounded-full font-bold text-white ${
+                            selectedItem.status === 'pending'
+                              ? 'bg-yellow-500'
+                              : selectedItem.status === 'quoted'
+                              ? 'bg-blue-500'
+                              : 'bg-green-500'
+                          }`}
+                        >
+                          {selectedItem.status.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500 pt-2">Submitted: {new Date(selectedItem.createdAt).toLocaleString()}</div>
+                    </div>
+                  </div>
+
+                  {/* Requester Information Section */}
+                  <div className="mb-8 bg-purple-50 p-6 rounded-lg border-l-4 border-purple-500">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">👤 Requester Information</h3>
+                    <div className="space-y-3">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Name</p>
+                          <p className="text-lg font-bold text-gray-900">
+                            {(selectedItem as TradeIn).user.firstName} {(selectedItem as TradeIn).user.lastName || ''}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Account Type</p>
+                          <p className="text-lg font-bold text-gray-900 capitalize">{(selectedItem as TradeIn).user.accountType || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 font-semibold">Email</p>
+                          <p className="font-mono text-blue-600 underline cursor-pointer" onClick={() => { window.location.href = `mailto:${(selectedItem as TradeIn).user.email}` }}>
+                            {(selectedItem as TradeIn).user.email}
+                          </p>
+                        </div>
+                        {(selectedItem as TradeIn).user.phone && (
+                          <div>
+                            <p className="text-sm text-gray-600 font-semibold">Phone</p>
+                            <p className="font-bold text-gray-900">{(selectedItem as TradeIn).user.phone}</p>
+                          </div>
+                        )}
+                      </div>
+                      {((selectedItem as TradeIn).user.city || (selectedItem as TradeIn).user.country) && (
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {(selectedItem as TradeIn).user.city && (
+                            <div>
+                              <p className="text-sm text-gray-600 font-semibold">City</p>
+                              <p className="font-bold text-gray-900">{(selectedItem as TradeIn).user.city}</p>
+                            </div>
+                          )}
+                          {(selectedItem as TradeIn).user.country && (
+                            <div>
+                              <p className="text-sm text-gray-600 font-semibold">Country</p>
+                              <p className="font-bold text-gray-900">{(selectedItem as TradeIn).user.country}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {(selectedItem as TradeIn).user.phone && (
+                        <div className="flex gap-3 pt-4">
+                          <a
+                            href={`https://wa.me/${(selectedItem as TradeIn).user.phone!.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-bold transition text-center"
+                          >
+                            💬 WhatsApp Contact
+                          </a>
+                          <a
+                            href={`tel:${(selectedItem as TradeIn).user.phone}`}
+                            className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold transition text-center"
+                          >
+                            📞 Call
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {selectedItem.status === 'pending' && (
+                    <div className="space-y-4 border-t pt-6">
+                      <div>
+                        <label className="block font-bold text-gray-700 mb-2">Quoted Price (in ₦)</label>
+                        <input
+                          type="number"
+                          value={quotedPrice}
+                          onChange={(e) => setQuotedPrice(e.target.value)}
+                          placeholder="Enter your quote..."
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                          min="0"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-gray-700 mb-2">Rejection Reason (if rejecting)</label>
+                        <textarea
+                          value={reason}
+                          onChange={(e) => setReason(e.target.value)}
+                          placeholder="Explain why you're rejecting this request..."
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleQuoteTradeIn(selectedItem.id)}
+                          disabled={actionLoading || !quotedPrice}
+                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold disabled:opacity-50"
+                        >
+                          💬 Send Quote
+                        </button>
+                        <button
+                          onClick={() => handleApproveTradeIn(selectedItem.id)}
+                          disabled={actionLoading}
+                          className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold disabled:opacity-50"
+                        >
+                          ✓ Approve
+                        </button>
+                        <button
+                          onClick={() => handleRejectTradeIn(selectedItem.id)}
+                          disabled={actionLoading || !reason.trim()}
+                          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold disabled:opacity-50"
+                        >
+                          ✗ Reject
+                        </button>
+                        <button
+                          onClick={() => setSelectedItem(null)}
+                          className="flex-1 px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 font-bold"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
