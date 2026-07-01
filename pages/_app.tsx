@@ -1,26 +1,26 @@
-import '../styles/global.css'
+import '@/styles/global.css'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import { ThemeProvider } from 'next-themes'
-import { CartProvider } from '../context/CartContext'
-import { CurrencyProvider } from '../context/CurrencyContext'
-import { NotificationProvider } from '../context/NotificationContext'
-import ErrorBoundary from '../components/ErrorBoundary'
-import CalculatorButton from '../components/CalculatorButton'
-import ChatWidget from '../components/ChatWidget'
-import AdminLiveChatNotifier from '../components/AdminLiveChatNotifier'
-import CookieConsent from '../components/CookieConsent'
-import GlobalCartToast from '../components/GlobalCartToast'
-import GlobalAppToast from '../components/GlobalAppToast'
+import { CartProvider } from '@/context/CartContext'
+import { CurrencyProvider } from '@/context/CurrencyContext'
+import { NotificationProvider } from '@/context/NotificationContext'
+import ErrorBoundary from '@/components/ui/ErrorBoundary'
+import CalculatorButton from '@/components/ui/CalculatorButton'
+import ChatWidget from '@/components/chat/ChatWidget'
+import AdminLiveChatNotifier from '@/components/chat/AdminLiveChatNotifier'
+import CookieConsent from '@/components/ui/CookieConsent'
+import GlobalCartToast from '@/components/ui/GlobalCartToast'
+import GlobalAppToast from '@/components/ui/GlobalAppToast'
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '@/store/authStore'
-import { bugTracker } from '../lib/bugTracker'
-import { performanceMonitor } from '../lib/performanceMonitor'
+import { bugTracker } from '@/lib/bugTracker'
+import { performanceMonitor } from '@/lib/performanceMonitor'
 
 // Lazy load polyfills only on client side
 const loadPolyfills = async () => {
   if (typeof window !== 'undefined') {
-    const { setupCSSVariableFallbacks, setupPerformanceMonitoring, getBrowserInfo } = await import('../lib/polyfills')
+    const { setupCSSVariableFallbacks, setupPerformanceMonitoring, getBrowserInfo } = await import('@/lib/polyfills')
     setupCSSVariableFallbacks()
     setupPerformanceMonitoring()
     

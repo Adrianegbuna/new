@@ -1,6 +1,6 @@
 ﻿import Head from 'next/head'
 import { useState, useEffect } from 'react'
-import Header from '../components/Header'
+import Header from "@/components/layout/Header";
 import Link from 'next/link'
 import { getApiBaseUrl } from '@/lib/apiConfig'
 import { getImageUrl, getFallbackImage } from '@/lib/imageUtils'

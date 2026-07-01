@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react'
-import Header from '../components/Header'
+import Header from '@/components/layout/Header'
 import Link from 'next/link'
 
 export default function Terms() {

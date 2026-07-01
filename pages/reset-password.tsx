@@ -1,7 +1,7 @@
 ﻿import { useState, ChangeEvent, FormEvent, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
-import Header from '../components/Header'
+import Header from "@/components/layout/Header";
 import { getApiBaseUrl } from '@/lib/apiConfig'
 
 interface FormState {

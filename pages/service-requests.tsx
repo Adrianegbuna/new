@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
-import Header from '../components/Header'
+import Header from "@/components/layout/Header";
 import { useAuthStore } from '@/store/authStore'
 import { PaystackPaymentService } from '@/lib/paystackService'
 import { apiClient } from '@/lib/api-client'

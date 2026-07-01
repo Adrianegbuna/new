@@ -1,19 +1,19 @@
 ﻿import Head from 'next/head'
 import { useState, useEffect, MouseEvent } from 'react'
 import { useRouter } from 'next/router'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
+import Header from "@/components/layout/Header";
+import Footer from '@/components/layout/Footer'
 import Link from 'next/link'
 import { apiClient } from '@/lib/api-client'
 import { openLiveChatPopup } from '@/lib/liveChat'
-import { useCurrency } from '../context/CurrencyContext'
-import { useCart } from '../context/CartContext'
+import { useCurrency } from '@/context/CurrencyContext'
+import { useCart } from '@/context/CartContext'
 import { useAuthStore } from '@/store/authStore'
 import { getWishlistIds } from '@/lib/wishlist'
 import { addProductToWishlist, ensureWishlistSync, removeProductFromWishlist } from '@/lib/wishlist-api'
 import { getVideoMimeType, isVideoUrl } from '@/lib/imageUtils'
 import { openVideoFullscreen } from '@/lib/videoFullscreen'
-import type { CatalogProduct } from '../types'
+import type { CatalogProduct } from '@/types'
 
 interface Package {
   id: string

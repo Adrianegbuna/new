@@ -1,10 +1,10 @@
 ﻿import Head from 'next/head'
 import { useState, useEffect } from 'react'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
 import Link from 'next/link'
 import { getApiBaseUrl } from '@/lib/apiConfig'
-import { useCurrency } from '../context/CurrencyContext'
+import { useCurrency } from '@/context/CurrencyContext'
 import { getImageUrl } from '@/lib/imageUtils'
 
 interface Product {

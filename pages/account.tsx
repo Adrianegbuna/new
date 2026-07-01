@@ -1,13 +1,13 @@
 ﻿import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import Header from '../components/Header'
+import Header from "@/components/layout/Header";
 import Head from 'next/head'
 import Script from 'next/script'
-import { useCurrency } from '../context/CurrencyContext'
+import { useCurrency } from '@/context/CurrencyContext'
 import { getApiBaseUrl } from '@/lib/apiConfig'
 import { useAuthStore } from '@/store/authStore'
-import ResaleForm from '../components/ResaleForm'
-import TradeInForm from '../components/TradeInForm'
+import ResaleForm from '@/components/forms/ResaleForm'
+import TradeInForm from '@/components/forms/TradeInForm'
 
 export default function Account() {
   const router = useRouter()

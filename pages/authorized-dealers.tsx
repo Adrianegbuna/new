@@ -1,5 +1,5 @@
 ﻿import React, { useState, useMemo } from 'react';
-import { SearchBar } from '@/components/SearchBar';
+import { SearchBar } from '@/components/ui/SearchBar';
 import styles from '@/styles/authorized-dealers.module.css';
 
 const dealersData = [

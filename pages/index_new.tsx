@@ -1,15 +1,15 @@
 ﻿import Head from 'next/head'
 import { useState, useEffect, MouseEvent, useRef } from 'react'
-import Header from '../components/Header'
-import ProductCard from '../components/ProductCard'
+import Header from "@/components/layout/Header";
+import ProductCard from '@/components/product/ProductCard'
 import { productService } from '@/lib/services'
-import { useCurrency } from '../context/CurrencyContext'
-import { useCart } from '../context/CartContext'
-import { getWishlistIds, toggleWishlistId } from '../lib/wishlist'
+import { useCurrency } from '@/context/CurrencyContext'
+import { useCart } from '@/context/CartContext'
+import { getWishlistIds, toggleWishlistId } from '@/lib/wishlist'
 import { apiClient } from '@/lib/api-client'
 import Link from 'next/link'
-import type { CatalogProduct } from '../types'
-import ComingSoonToast from '../components/ComingSoonToast'
+import type { CatalogProduct } from '@/types'
+import ComingSoonToast from '@/components/ui/ComingSoonToast'
 
 export default function Home() {
   const [products, setProducts] = useState<CatalogProduct[]>([])

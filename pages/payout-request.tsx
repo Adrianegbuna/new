@@ -1,9 +1,9 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import { apiClient } from '../lib/api-client';
-import { useAuthStore } from '../store/authStore';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/authStore';
 
 interface PayoutRequest {
   id: string;

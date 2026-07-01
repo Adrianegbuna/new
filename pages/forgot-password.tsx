@@ -1,7 +1,7 @@
 ﻿import { useState, ChangeEvent, FormEvent } from 'react'
 import Link from 'next/link'
 import Head from 'next/head'
-import Header from '../components/Header'
+import Header from '@/components/layout/Header'
 import { validateEmail } from '@/lib/emailValidation'
 import { getApiBaseUrl } from '@/lib/apiConfig'
 

@@ -1,6 +1,6 @@
 ﻿import React, { useState } from 'react'
-import Header from '../components/Header'
-import { useNotifications } from '../context/NotificationContext'
+import Header from '@/components/layout/Header'
+import { useNotifications } from '@/context/NotificationContext'
 import { useRouter } from 'next/router'
 
 type FilterType = 'all' | 'order' | 'payment' | 'job' | 'review' | 'message' | 'installment' | 'product' | 'vendor' | 'general'

@@ -1,7 +1,7 @@
 ﻿import Head from 'next/head'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
-import JumiaProductsDisplay from '../components/JumiaProductsDisplay'
+import Header from "@/components/layout/Header";
+import Footer from '@/components/layout/Footer'
+import JumiaProductsDisplay from '@/components/product/JumiaProductsDisplay'
 
 export default function ShopPage() {
   return (

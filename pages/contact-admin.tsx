@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
-import Header from '@/components/Header'
+import Header from "@/components/layout/Header";
 import { useAuthStore } from '@/store/authStore'
 import { getApiBaseUrl, getBackendBaseUrl } from '@/lib/apiConfig'
 

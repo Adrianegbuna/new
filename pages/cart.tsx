@@ -1,6 +1,6 @@
-﻿import Header from '../components/Header'
-import { useCart } from '../context/CartContext'
-import { useCurrency } from '../context/CurrencyContext'
+﻿import Header from '@/components/layout/Header'
+import { useCart } from '@/context/CartContext'
+import { useCurrency } from '@/context/CurrencyContext'
 import { useAuthStore } from '@/store/authStore'
 import Link from 'next/link'
 import Head from 'next/head'
@@ -9,7 +9,7 @@ import { useRouter } from 'next/router'
 import { getApiBaseUrl, getBackendBaseUrl } from '@/lib/apiConfig'
 import { PaystackPaymentService } from '@/lib/paystackService'
 import { loadPaystack } from '@/lib/paystackLoader'
-import ComingSoonToast from '../components/ComingSoonToast'
+import ComingSoonToast from '@/components/ui/ComingSoonToast'
 
 export default function Cart() {
   const router = useRouter()

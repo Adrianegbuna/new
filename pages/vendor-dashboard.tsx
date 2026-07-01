@@ -1,21 +1,22 @@
-﻿﻿﻿import Head from 'next/head'
+﻿﻿/* eslint-disable @next/next/no-page-custom-font */
+﻿import Head from 'next/head'
 import { useState, useEffect } from 'react'
-import Header from '../components/Header'
-import DashboardLayout from '@/components/DashboardLayout'
-import DashboardHeaderActions from '@/components/DashboardHeaderActions'
+import Header from "@/components/layout/Header";
+import DashboardLayout from '@/components/layout/DashboardLayout'
+import DashboardHeaderActions from '@/components/layout/DashboardHeaderActions'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useCurrency } from '../context/CurrencyContext'
-import { africanCountries, getPhoneInfo } from '../data/locations'
-import { validatePhoneNumber } from '../lib/phoneValidation'
-import { validateEmail } from '../lib/emailValidation'
+import { useCurrency } from '@/context/CurrencyContext'
+import { africanCountries, getPhoneInfo } from '@/data/locations'
+import { validatePhoneNumber } from '@/lib/phoneValidation'
+import { validateEmail } from '@/lib/emailValidation'
 import { getApiBaseUrl, getBackendBaseUrl } from '@/lib/apiConfig'
 import { getImageUrl, getSmallFallbackImage } from '@/lib/imageUtils'
 import { useAuthStore } from '@/store/authStore'
-import { S3ImageUploader } from '../components/S3ImageUploader'
+import { S3ImageUploader } from '@/components/uploaders/S3ImageUploader'
 import { apiClient } from '@/lib/api-client'
-import ResaleForm from '../components/ResaleForm'
-import TradeInForm from '../components/TradeInForm'
+import ResaleForm from '@/components/forms/ResaleForm'
+import TradeInForm from '@/components/forms/TradeInForm'
 
 interface Product {
   id: number

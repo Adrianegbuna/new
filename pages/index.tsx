@@ -1,11 +1,11 @@
 ﻿import Head from 'next/head'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
-import ProductGrid from '../components/ProductGrid'
-import HeroAdCarousel from '../components/HeroAdCarousel'
-import type { CatalogProduct } from '../types'
+import Header from "@/components/layout/Header";
+import Footer from '@/components/layout/Footer'
+import ProductGrid from '@/components/product/ProductGrid'
+import HeroAdCarousel from '@/components/product/HeroAdCarousel'
+import type { CatalogProduct } from '@/types'
 import { getApiBaseUrl } from '@/lib/apiConfig'
 import type { GetStaticProps } from 'next'
 

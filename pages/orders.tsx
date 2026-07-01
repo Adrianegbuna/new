@@ -1,8 +1,8 @@
 ﻿import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import Header from '../components/Header'
+import Header from "@/components/layout/Header";
 import Head from 'next/head'
-import { useCurrency } from '../context/CurrencyContext'
+import { useCurrency } from '@/context/CurrencyContext'
 import { getApiBaseUrl } from '@/lib/apiConfig'
 import { useAuthStore } from '@/store/authStore'
 import { buildOrderPlacedEmail, buildShipmentEmail, buildOrderSuccessEmail, sendEmailNotification } from '@/lib/notify'

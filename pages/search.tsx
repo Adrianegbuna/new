@@ -2,8 +2,8 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
+import Header from "@/components/layout/Header";
+import Footer from '@/components/layout/Footer'
 import { getApiBaseUrl } from '@/lib/apiConfig'
 
 type ProductItem = {

@@ -1,12 +1,12 @@
 ﻿import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
 import Link from 'next/link'
 import { apiClient } from '@/lib/api-client'
 import { useAuthStore } from '@/store/authStore'
-import { S3ImageUploader } from '../components/S3ImageUploader'
+import { S3ImageUploader } from '@/components/uploaders/S3ImageUploader'
 
 interface Store {
   id: string

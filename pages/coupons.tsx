@@ -2,8 +2,8 @@
 import { useRouter } from 'next/router';
 import { apiClient } from '@/lib/api-client';
 import Head from 'next/head';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Header from "@/components/layout/Header";
+import Footer from '@/components/layout/Footer';
 
 interface Coupon {
   id: string;

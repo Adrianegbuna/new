@@ -2,12 +2,12 @@
 import { useRouter } from 'next/router';
 import { apiClient } from '@/lib/api-client';
 import Head from 'next/head';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import { useAuthStore } from '../store/authStore';
-import { useCart } from '../context/CartContext';
-import { useCurrency } from '../context/CurrencyContext';
-import { getFallbackImage, getImageUrl } from '../lib/imageUtils';
+import Header from "@/components/layout/Header";
+import Footer from '@/components/layout/Footer';
+import { useAuthStore } from '@/store/authStore';
+import { useCart } from '@/context/CartContext';
+import { useCurrency } from '@/context/CurrencyContext';
+import { getFallbackImage, getImageUrl } from '@/lib/imageUtils';
 
 interface WishlistItem {
   id: string;

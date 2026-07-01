@@ -1,6 +1,6 @@
 ﻿import { useState, useMemo } from 'react';
-import { services } from '../data/services';
-import { SearchBar } from '@/components/SearchBar';
+import { services } from '@/data/services';
+import { SearchBar } from '@/components/ui/SearchBar';
 import styles from '@/styles/services.module.css';
 
 const ServicesPage = () => {

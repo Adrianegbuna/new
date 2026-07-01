@@ -1,7 +1,7 @@
 ﻿import Head from 'next/head'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
-import RenewableEnergyMarketplace from '../components/RenewableEnergyMarketplace'
+import Header from "@/components/layout/Header";
+import Footer from '@/components/layout/Footer'
+import RenewableEnergyMarketplace from '@/components/product/RenewableEnergyMarketplace'
 
 export default function MarketplacePage() {
   return (

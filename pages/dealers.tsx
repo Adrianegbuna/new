@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react';
-import { FilterBox } from '@/components/FilterBox';
+import { FilterBox } from '@/components/ui/FilterBox';
 import styles from '@/styles/dealers.module.css';
 
 interface FilterOption {

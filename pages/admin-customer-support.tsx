@@ -1,7 +1,7 @@
 ﻿import Head from 'next/head';
-import Header from '@/components/Header';
-import { ProtectAdminPage } from '@/components/ProtectAdminPage';
-import { AdminServiceRequests } from '@/components/AdminServiceRequests';
+import Header from '@/components/layout/Header';
+import { ProtectAdminPage } from '@/components/services-requests/ProtectAdminPage';
+import { AdminServiceRequests } from "@/components/services-requests/AdminServiceRequests";
 
 export default function AdminCustomerSupportPage() {
   return (

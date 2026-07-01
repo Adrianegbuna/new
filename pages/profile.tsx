@@ -1,8 +1,8 @@
 ﻿import { useState } from 'react';
-import { ImageUploader } from '@/components/ImageUploader';
+import { ImageUploader } from '@/components/uploaders/ImageUploader';
 import styles from '@/styles/profile.module.css';
 import { useAuthStore } from '@/store/authStore';
-import Header from '@/components/Header';
+import Header from "@/components/layout/Header";
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuthStore();

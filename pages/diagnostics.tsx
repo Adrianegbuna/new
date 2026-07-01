@@ -1,6 +1,6 @@
 ﻿import Head from 'next/head'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import { useState, useEffect } from 'react'
 import { getApiBaseUrl } from '@/lib/apiConfig'
 
