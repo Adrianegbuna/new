@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
-import Header from '@/components/Header';
-import { ProtectAdminPage } from '@/components/ProtectAdminPage';
+import Header from '@/components/layout/Header';
+import { ProtectAdminPage } from '@/components/services-requests/ProtectAdminPage';
 import { apiClient } from '@/lib/api-client';
 import { useRouter } from 'next/router';
 

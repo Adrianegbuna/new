@@ -1,8 +1,8 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
-import Header from '@/components/Header';
-import S3ImageUploader from '@/components/S3ImageUploader';
-import { ProtectAdminPage } from '@/components/ProtectAdminPage';
+import Header from '@/components/layout/Header';
+import S3ImageUploader from '@/components/uploaders/S3ImageUploader';
+import { ProtectAdminPage } from '@/components/services-requests/ProtectAdminPage';
 import { apiClient } from '@/lib/api-client';
 
 interface Store {

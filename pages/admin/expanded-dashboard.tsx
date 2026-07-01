@@ -4,12 +4,12 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import { useRouter } from 'next/router';
 import styles from '@/styles/admin-dashboard.module.css';
-import DashboardLayout from '@/components/DashboardLayout';
-import DashboardHeaderActions from '@/components/DashboardHeaderActions';
-import Header from '@/components/Header';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import DashboardHeaderActions from '@/components/layout/DashboardHeaderActions';
+import Header from '@/components/layout/Header';
 import { useAuthStore } from '@/store/authStore';
 import { apiClient } from '@/lib/api-client';
-import { S3ImageUploader } from '@/components/S3ImageUploader';
+import { S3ImageUploader } from '@/components/uploaders/S3ImageUploader';
 import { getImageUrl, getSmallFallbackImage } from '@/lib/imageUtils';
 
 // ============================================

@@ -1,7 +1,7 @@
 import Head from 'next/head';
-import Header from '@/components/Header';
-import { ProtectAdminPage } from '@/components/ProtectAdminPage';
-import { AdminChatInbox } from '@/components/AdminChatInbox';
+import Header from '@/components/layout/Header';
+import { ProtectAdminPage } from '@/components/services-requests/ProtectAdminPage';
+import { AdminChatInbox } from '@/components/chat/AdminChatInbox';
 
 export default function AdminChatPage() {
   return (

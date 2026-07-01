@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
-import Header from '../../components/Header'
-import Footer from '../../components/Footer'
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
 import { apiClient } from '@/lib/api-client'
 import { useAuthStore } from '@/store/authStore'
 

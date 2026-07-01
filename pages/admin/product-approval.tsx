@@ -1,10 +1,10 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
-import Header from '@/components/Header';
+import Header from '@/components/layout/Header';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
 import { useCurrency } from '@/context/CurrencyContext';
-import { ProtectAdminPage } from '@/components/ProtectAdminPage';
+import { ProtectAdminPage } from '@/components/services-requests/ProtectAdminPage';
 
 interface Product {
   id: string;

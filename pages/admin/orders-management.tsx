@@ -1,10 +1,10 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { apiClient } from '../../lib/api-client';
+import { apiClient } from '@/lib/api-client';
 import { getApiBaseUrl } from '@/lib/apiConfig';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
-import { useAuthStore } from '../../store/authStore';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import { useAuthStore } from '@/store/authStore';
 
 interface Customer {
   id: string;
